@@ -41,3 +41,15 @@ target("hl")
     add_defines("HAVE_CONFIG_H")
     add_defines("PCRE2_CODE_UNIT_WIDTH=16")
     add_packages("pcre2")
+
+target("hashlink")
+    set_kind("binary")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/src/code.c",
+              "hashlink/src/jit.c",
+              "hashlink/src/main.c",
+              "hashlink/src/module.c",
+              "hashlink/src/debugger.c",
+              "hashlink/src/profile.c")
+   add_ldflags("-ldl")
+   add_deps("hl")
