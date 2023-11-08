@@ -81,8 +81,9 @@ end
 -----------------------------------------------------------------
 -- Hashlink standard library
 -----------------------------------------------------------------
-target("hl")
+target("libhl")
     set_kind("shared")
+    set_basename("dl")
     add_includedirs("hashlink/src")
     add_files("hashlink/src/std/array.c",
               "hashlink/src/std/buffer.c",
@@ -129,12 +130,9 @@ target("hl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
--- Main executable. We use a long name "hashlink" instead of a short
--- name "hl" like official. This is due to a restriction of xmake, that
--- it does not support targets have identical names, even if the two
--- targets are indeed different kinds. 
+-- Main executable
 -----------------------------------------------------------------
-target("hashlink")
+target("hl")
     set_kind("binary")
     add_includedirs("hashlink/src")
     add_ldflags("-ldl")
@@ -144,7 +142,7 @@ target("hashlink")
               "hashlink/src/module.c",
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
-    add_deps("hl")
+    add_deps("libhl")
     on_load(bind_flags(compile_flags, binary_link_flags))
 
 -----------------------------------------------------------------
@@ -156,7 +154,7 @@ target("fmt")
     set_kind("shared")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/fmt/*.c")
-    add_deps("hl")
+    add_deps("libhl")
     add_packages("mikktspace", "libvorbis", "minimp3", "zlib", "libpng", "libjpeg-turbo")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
@@ -166,7 +164,7 @@ target("ui")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ui/ui_stub.c")
     add_packages("libui")
-    add_deps("hl")
+    add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
@@ -184,7 +182,7 @@ target("sqlite")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sqlite/*.c")
     add_packages("sqlite3")
-    add_deps("hl")
+    add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
@@ -193,7 +191,7 @@ target("ssl")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ssl/*.c")
     add_packages("mbedtls")
-    add_deps("hl")
+    add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
@@ -202,7 +200,7 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_packages("openal")
-    add_deps("hl")
+    add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
@@ -212,7 +210,7 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_packages("libsdl")
-    add_deps("hl")
+    add_deps("libhl")
     add_shflags("-lGL")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
