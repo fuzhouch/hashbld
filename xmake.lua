@@ -8,7 +8,7 @@
 -- b) In Steam build Docker image, we use xmake generated Makefile.
 
 -- Dependencies of core
-add_requires("pcre2 10.40", { system = false })
+add_requires("pcre 8.45", { system = false, configs = {bitwidth=16}})
 add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7", { system = false })
 add_requires("libpng v1.6.40", { system = false })
@@ -27,16 +27,18 @@ add_requires("openal-soft 1.23.1", { system = false })
 -- Thus, SDL2 build file can only locate header file at
 -- /usr/include/X11/X11/Xext.h.
 --
--- To fix it we need to use 2.28.5 or above. It adds a Cmake parameter
--- X11_INCLUDE_DIR, which should be set to /usr/include.
+-- For now I just use the workaround above.
+-- To really fix it we need to use main branch above 2.28.5.
+-- It adds a Cmake parameter X11_INCLUDE_DIR,
+-- which should be set to /usr/include. Let's wait for a true fix.
 --
 -- See code: https://github.com/libsdl-org/SDL/blob/07cb7c10a15b95387431bcb3a1ae77cfd432707b/cmake/sdlchecks.cmake#L269 
-add_requires("libsdl 2.28.5", { system = false })
+add_requires("libsdl 2.28.5", { system = false, })
 
 
 -- Define our own toolchains. Every toolchain should be platform
 -- specific, with compiler specific flag built-in.
-toolchain("linux_x86_64-gcc")
+toolchain("linux_x86_64-gcc-minimal-dep")
     set_kind("standalone")
     set_toolset("ar", "ar")
     set_toolset("as", "gcc")
@@ -53,8 +55,10 @@ toolchain("linux_x86_64-gcc")
         toolchain:add("cxflags", "-pthread")
         toolchain:add("cxflags", "-fno-omit-frame-pointer")
         toolchain:add("ldflags", "-lm")
+        toolchain:add("ldflags", "-lstdc++")
         toolchain:add("ldflags", "-Wl,-rpath,.:'$ORIGIN'")
         toolchain:add("ldflags", "-Wl,--export-dynamic")
+        toolchain:add("ldflags", "-Wl,--no-undefined")
         toolchain:add("ldflags", "-Wl,--no-undefined")
     end)
 
@@ -62,11 +66,30 @@ toolchain("linux_x86_64-gcc")
 target("hl")
     set_kind("shared")
     add_includedirs("hashlink/src")
-    add_files("hashlink/src/std/*.c")
+    add_files("hashlink/src/std/array.c",
+        "hashlink/src/std/buffer.c",
+        "hashlink/src/std/bytes.c",
+        "hashlink/src/std/cast.c",
+        "hashlink/src/std/date.c",
+        "hashlink/src/std/error.c",
+        "hashlink/src/std/debug.c",
+        "hashlink/src/std/file.c",
+        "hashlink/src/std/fun.c",
+        "hashlink/src/std/maps.c",
+        "hashlink/src/std/math.c",
+        "hashlink/src/std/obj.c",
+        "hashlink/src/std/random.c",
+        "hashlink/src/std/regexp.c",
+        "hashlink/src/std/socket.c",
+        "hashlink/src/std/string.c",
+        "hashlink/src/std/sys.c",
+        "hashlink/src/std/track.c",
+        "hashlink/src/std/types.c",
+        "hashlink/src/std/ucs2.c",
+        "hashlink/src/std/thread.c",
+        "hashlink/src/std/process.c")
     add_files("hashlink/src/gc.c")
-    add_defines("HAVE_CONFIG_H")
-    add_defines("PCRE2_CODE_UNIT_WIDTH=16")
-    add_packages("pcre2")
+    add_packages("pcre")
 
 -- Main executable. We use a long name "hashlink" instead of a short
 -- name "hl" like official. This is due to a restriction of xmake, that
@@ -75,14 +98,14 @@ target("hl")
 target("hashlink")
     set_kind("binary")
     add_includedirs("hashlink/src")
+    add_ldflags("-ldl")
     add_files("hashlink/src/code.c",
               "hashlink/src/jit.c",
               "hashlink/src/main.c",
               "hashlink/src/module.c",
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
-   add_ldflags("-ldl")
-   add_deps("hl")
+    add_deps("hl")
 
 --
 -- Below are libraries built with hashlink. Note that they also needs
@@ -93,8 +116,8 @@ target("fmt")
    set_kind("shared")
    add_includedirs("hashlink/src")
    add_files("hashlink/libs/fmt/*.c")
-   add_packages("mikktspace", "libvorbis", "minimp3", "zlib")
    add_deps("hl")
+   add_packages("mikktspace", "libvorbis", "minimp3", "zlib")
 
 target("ui")
    set_kind("shared")
@@ -136,5 +159,5 @@ target("sdl")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
-    add_packages("libsdl") -- add { system = true } to build with system
+    add_packages("libsdl")
     add_deps("hl")
