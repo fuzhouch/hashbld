@@ -2,3 +2,4 @@ hashlink/
 hashlink
 build/
 .xmake/
+*.hl

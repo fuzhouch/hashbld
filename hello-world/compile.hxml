@@ -1,0 +1,5 @@
+-cp src
+-lib heaps
+-lib hlsdl
+-main Main
+-hl hello.hl
