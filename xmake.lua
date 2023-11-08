@@ -20,11 +20,27 @@ add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
 add_requires("openal-soft 1.23.1", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
--- For now let's use system built-in version of libSDL. My static libSDL
--- always causes Address Boundary error crash on my Linux desktop. I
--- haven't got root cause spotted yet. This issue needs to be solved
--- because SDL is not installed by default on Windows desktop.
-add_requires("libsdl", { system = true })
+-- 
+-- TODO
+--
+-- I have to apply an external fix to build libsdl in Manjaro system,
+-- that I need to create an /usr/include/X11/X11 symbolic link
+-- pointing to /usr/include/X11. That means, we must allow access to
+-- X11 headers in a path like /usr/include/X11/X11/Xext.h.
+--
+-- This is caused by libsdl/cmake/sdlchecks.cmake, that it searches system
+-- folders to find X11 header files. However it does not include
+-- /usr/include. For an unknown reason, it works for manual cmake
+-- configuration but does not work when xmake builds libsdl from source
+-- code as a dependency. A possile theory is xmake applies a more strict
+-- search path limitation, which does not allow searching /usr/include.
+--
+-- If my theory is true, then it may not make sense to ask xmake fix it,
+-- because X11 code are intended to be considered as an OS-level infra,
+-- which I should never touch it myself.
+--
+-- Will check with xmake team for further diagnose.
+add_requires("libsdl 2.28.5", { system = false })
 
 -----------------------------------------------------------------
 -- Utility functions
