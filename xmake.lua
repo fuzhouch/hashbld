@@ -8,7 +8,7 @@
 -- b) In Steam build Docker image, we use xmake generated Makefile.
 
 -- Dependencies of core
-add_requires("pcre 8.45", { system = false, configs = {bitwidth=16}})
+-- add_requires("pcre 8.45", { system = false, configs = { bitwidth = 16 }})
 add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7", { system = false })
 add_requires("libpng v1.6.40", { system = false })
@@ -19,82 +19,121 @@ add_requires("libuv v1.46.0", { system = false })
 add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
 add_requires("openal-soft 1.23.1", { system = false })
+add_requires("libjpeg-turbo 2.1.4", { system = false })
+-- For now let's use system built-in version of libSDL. My static libSDL
+-- always causes Address Boundary error crash on my Linux desktop. I
+-- haven't got root cause spotted yet. This issue needs to be solved
+-- because SDL is not installed by default on Windows desktop.
+add_requires("libsdl", { system = true })
 
--- libsdl may have problems when building package from source. The
--- reason is SDL hard-codes search path to find X11/Xext.h, which assumes
--- a set of predefined paths but includes only /usr/include/X11.
--- In Manjaro Linux all Xorg headers are placed at /usr/include/X11.
--- Thus, SDL2 build file can only locate header file at
--- /usr/include/X11/X11/Xext.h.
---
--- For now I just use the workaround above.
--- To really fix it we need to use main branch above 2.28.5.
--- It adds a Cmake parameter X11_INCLUDE_DIR,
--- which should be set to /usr/include. Let's wait for a true fix.
---
--- See code: https://github.com/libsdl-org/SDL/blob/07cb7c10a15b95387431bcb3a1ae77cfd432707b/cmake/sdlchecks.cmake#L269 
-add_requires("libsdl 2.28.5", { system = false, })
+-----------------------------------------------------------------
+-- Utility functions
+-----------------------------------------------------------------
 
+function rename_hdll (target)
+    target:set("filename", target:basename() .. ".hdll")
+end
 
--- Define our own toolchains. Every toolchain should be platform
--- specific, with compiler specific flag built-in.
-toolchain("linux_x86_64-gcc-minimal-dep")
-    set_kind("standalone")
-    set_toolset("ar", "ar")
-    set_toolset("as", "gcc")
-    set_toolset("cc", "gcc")
-    set_toolset("cxx", "g++")
-    set_toolset("ld", "gcc")
-    set_toolset("sh", "gcc")
+function binary_link_flags(target)
+    if target:is_plat("linux") then
+        target:add("cxflags", "-pthread")
+        target:add("ldflags", "-lm")
+        -- Linux/gcc settings
+        target:add("cxflags", "-fPIC")
+        target:add("cxflags", "-fno-omit-frame-pointer")
+        target:add("ldflags", "-Wl,-rpath,.:'$ORIGIN'")
+        target:add("ldflags", "-Wl,--export-dynamic")
+        target:add("ldflags", "-Wl,--no-undefined")
+    end
+end
 
-    on_load(function (toolchain)
-        if not is_arch("x86_64", "x64") then
+function dynlib_link_flags(target)
+    if target:is_plat("linux") then
+        target:add("cxflags", "-pthread")
+        target:add("ldflags", "-lm")
+    end
+end
+
+function compile_flags(target)
+    if target:is_plat("linux") then
+        -- Build location specific
+        target:add("cflags", "-Ihashlink/src")
+
+        -- Build location independent settings
+        target:add("cflags", "-Wall")
+        target:add("cflags", "-O3")
+        target:add("cflags", "-msse2")
+        target:add("cflags", "-mfpmath=sse")
+        target:add("cflags", "-std=c11")
+        target:add("defines", "LIBHL_EXPORTS")
+    end
+end
+
+function bind_flags(...)
+    local args = { ... }
+    return function(target)
+        for i, fun in ipairs(args) do
+            fun(target)
         end
+    end
+end
 
-        toolchain:add("cxflags", "-fPIC")
-        toolchain:add("cxflags", "-pthread")
-        toolchain:add("cxflags", "-fno-omit-frame-pointer")
-        toolchain:add("ldflags", "-lm")
-        toolchain:add("ldflags", "-lstdc++")
-        toolchain:add("ldflags", "-Wl,-rpath,.:'$ORIGIN'")
-        toolchain:add("ldflags", "-Wl,--export-dynamic")
-        toolchain:add("ldflags", "-Wl,--no-undefined")
-        toolchain:add("ldflags", "-Wl,--no-undefined")
-    end)
-
--- Core library
+-----------------------------------------------------------------
+-- Hashlink standard library
+-----------------------------------------------------------------
 target("hl")
     set_kind("shared")
     add_includedirs("hashlink/src")
     add_files("hashlink/src/std/array.c",
-        "hashlink/src/std/buffer.c",
-        "hashlink/src/std/bytes.c",
-        "hashlink/src/std/cast.c",
-        "hashlink/src/std/date.c",
-        "hashlink/src/std/error.c",
-        "hashlink/src/std/debug.c",
-        "hashlink/src/std/file.c",
-        "hashlink/src/std/fun.c",
-        "hashlink/src/std/maps.c",
-        "hashlink/src/std/math.c",
-        "hashlink/src/std/obj.c",
-        "hashlink/src/std/random.c",
-        "hashlink/src/std/regexp.c",
-        "hashlink/src/std/socket.c",
-        "hashlink/src/std/string.c",
-        "hashlink/src/std/sys.c",
-        "hashlink/src/std/track.c",
-        "hashlink/src/std/types.c",
-        "hashlink/src/std/ucs2.c",
-        "hashlink/src/std/thread.c",
-        "hashlink/src/std/process.c")
+              "hashlink/src/std/buffer.c",
+              "hashlink/src/std/bytes.c",
+              "hashlink/src/std/cast.c",
+              "hashlink/src/std/date.c",
+              "hashlink/src/std/error.c",
+              "hashlink/src/std/debug.c",
+              "hashlink/src/std/file.c",
+              "hashlink/src/std/fun.c",
+              "hashlink/src/std/maps.c",
+              "hashlink/src/std/math.c",
+              "hashlink/src/std/obj.c",
+              "hashlink/src/std/random.c",
+              "hashlink/src/std/regexp.c",
+              "hashlink/src/std/socket.c",
+              "hashlink/src/std/string.c",
+              "hashlink/src/std/sys.c",
+              "hashlink/src/std/track.c",
+              "hashlink/src/std/types.c",
+              "hashlink/src/std/ucs2.c",
+              "hashlink/src/std/thread.c",
+              "hashlink/src/std/process.c")
+    -- Hashlink saves a copy of an old pcre version 8.42, which is
+    -- unavailable in xmake repository. The earlest available version,
+    -- pcre 8.45, causes crashes in Linux.
+    --
+    -- Let's use built-in version. Supposed it should be updated in master version.
+    add_files("hashlink/include/pcre/pcre_chartables.c",
+              "hashlink/include/pcre/pcre_compile.c",
+              "hashlink/include/pcre/pcre_dfa_exec.c",
+              "hashlink/include/pcre/pcre_exec.o",
+              "hashlink/include/pcre/pcre_fullinfo.o",
+              "hashlink/include/pcre/pcre_globals.o",
+              "hashlink/include/pcre/pcre_newline.c",
+              "hashlink/include/pcre/pcre_string_utils.c",
+              "hashlink/include/pcre/pcre_tables.c",
+              "hashlink/include/pcre/pcre_xclass.c",
+              "hashlink/include/pcre/pcre16_ord2utf16.c",
+              "hashlink/include/pcre/pcre16_valid_utf16.c",
+              "hashlink/include/pcre/pcre_ucd.c")
     add_files("hashlink/src/gc.c")
-    add_packages("pcre")
+    -- add_packages("pcre")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
 
+-----------------------------------------------------------------
 -- Main executable. We use a long name "hashlink" instead of a short
 -- name "hl" like official. This is due to a restriction of xmake, that
 -- it does not support targets have identical names, even if the two
 -- targets are indeed different kinds. 
+-----------------------------------------------------------------
 target("hashlink")
     set_kind("binary")
     add_includedirs("hashlink/src")
@@ -106,53 +145,66 @@ target("hashlink")
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
     add_deps("hl")
+    on_load(bind_flags(compile_flags, binary_link_flags))
 
---
+-----------------------------------------------------------------
 -- Below are libraries built with hashlink. Note that they also needs
 -- haxelib install commands to get Haxe interface, in order to access
 -- them.
---
+-----------------------------------------------------------------
 target("fmt")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/fmt/*.c")
-   add_deps("hl")
-   add_packages("mikktspace", "libvorbis", "minimp3", "zlib")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/fmt/*.c")
+    add_deps("hl")
+    add_packages("mikktspace", "libvorbis", "minimp3", "zlib", "libpng", "libjpeg-turbo")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("ui")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/ui/ui_stub.c")
-   add_packages("libui")
-   add_deps("hl")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/ui/ui_stub.c")
+    add_packages("libui")
+    add_deps("hl")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("uv")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/uv/*.c")
-   add_packages("libuv")
-   add_deps("hl")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/uv/*.c")
+    add_packages("libuv")
+    add_deps("hl")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("sqlite")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/sqlite/*.c")
-   add_packages("sqlite3")
-   add_deps("hl")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/sqlite/*.c")
+    add_packages("sqlite3")
+    add_deps("hl")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("ssl")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/ssl/*.c")
-   add_packages("mbedtls")
-   add_deps("hl")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/ssl/*.c")
+    add_packages("mbedtls")
+    add_deps("hl")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("openal")
-   set_kind("shared")
-   add_includedirs("hashlink/src")
-   add_files("hashlink/libs/openal/openal.c")
-   add_packages("openal")
-   add_deps("hl")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/openal/openal.c")
+    add_packages("openal")
+    add_deps("hl")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("sdl")
     set_kind("shared")
@@ -161,3 +213,6 @@ target("sdl")
               "hashlink/libs/sdl/gl.c")
     add_packages("libsdl")
     add_deps("hl")
+    add_shflags("-lGL")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
