@@ -18,7 +18,7 @@ add_requires("libui 2022.12.3", { system = false })
 add_requires("libuv v1.46.0", { system = false })
 add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
-add_requires("openal-soft 1.23.1", { system = false })
+add_requires("openal-soft 1.23.1", { system = true })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
 -- 
 -- TODO
@@ -52,12 +52,11 @@ end
 
 function binary_link_flags(target)
     if target:is_plat("linux") then
-        target:add("cxflags", "-pthread")
+        target:add("rpathdirs", ".")
+        target:add("rpathdirs", "$ORIGIN")
         target:add("ldflags", "-lm")
-        -- Linux/gcc settings
-        target:add("cxflags", "-fPIC")
-        target:add("cxflags", "-fno-omit-frame-pointer")
-        target:add("ldflags", "-Wl,-rpath,.:'$ORIGIN'")
+        target:add("ldflags", "-static-libgcc")
+        target:add("ldflags", "-static-libstdc++")
         target:add("ldflags", "-Wl,--export-dynamic")
         target:add("ldflags", "-Wl,--no-undefined")
     end
@@ -65,8 +64,14 @@ end
 
 function dynlib_link_flags(target)
     if target:is_plat("linux") then
-        target:add("cxflags", "-pthread")
-        target:add("ldflags", "-lm")
+        target:add("rpathdirs", ".")
+        target:add("rpathdirs", "$ORIGIN")
+        target:add("shflags", "-lm")
+        target:add("shflags", "-static-libgcc")
+        target:add("shflags", "-static-libstdc++")
+        target:add("shflags", "-Wl,--export-dynamic")
+        target:add("shflags", "-Wl,--no-undefined")
+
     end
 end
 
@@ -74,6 +79,7 @@ function compile_flags(target)
     if target:is_plat("linux") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
+        target:add("defines", "AL_LIBTYPE_STATIC")
 
         -- Build location independent settings
         target:add("cflags", "-Wall")
@@ -81,7 +87,13 @@ function compile_flags(target)
         target:add("cflags", "-msse2")
         target:add("cflags", "-mfpmath=sse")
         target:add("cflags", "-std=c11")
+        target:add("cxflags", "-fpic")
+        target:add("cxflags", "-fno-omit-frame-pointer")
+        target:add("cxflags", "-ftls-model=global-dynamic")
+        target:add("cxflags", "-pthread")
         target:add("defines", "LIBHL_EXPORTS")
+        target:add("defines", "openal_soft")
+        target:add("defines", "GL_SILENCE_DEPRECATION")
     end
 end
 
@@ -99,7 +111,7 @@ end
 -----------------------------------------------------------------
 target("libhl")
     set_kind("shared")
-    set_basename("dl")
+    set_basename("hl")
     add_includedirs("hashlink/src")
     add_files("hashlink/src/std/array.c",
               "hashlink/src/std/buffer.c",
@@ -215,8 +227,8 @@ target("openal")
     set_kind("shared")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
-    add_packages("openal")
     add_deps("libhl")
+    add_packages("openal-soft")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
