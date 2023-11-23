@@ -33,7 +33,7 @@ jobs:
               cd /hashbld
               git clone https://github.com/xmake-io/xmake
               cd /hashbld/xmake
-              git submodule --init --recursive .
+              git submodule update --init --recursive .
               ./configure --prefix=/hashbld/xmake/buildroot
               make
               make install
