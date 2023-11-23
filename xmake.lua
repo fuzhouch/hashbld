@@ -39,9 +39,9 @@ if is_plat("linux") then
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_steamrt() then
-        add_requires("apt:libgl1-mesa-dev", { system = true })
-        add_requires("apt:libxcb1-dev", { system = true })
-        add_requires("apt:libx11-dev", { system = true })
+        add_requires("apt::libgl1-mesa-dev", { system = true })
+        add_requires("apt::libxcb1-dev", { system = true })
+        add_requires("apt::libx11-dev", { system = true })
     else
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
