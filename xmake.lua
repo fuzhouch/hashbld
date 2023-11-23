@@ -22,17 +22,19 @@ add_requires("libsndio 1.9.0", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libsdl 2.28.5", { system = false })
 add_requires("libogg v1.3.4", { system = false })
-add_requires("alsa-lib 1.2.10", { system = false })
 add_requires("python 3.11.3", { system = false })
 
--- The following dependencies are required as platform must-have.
+-- The following dependencies are required as platform specific
 -- The criteria is based on Steam runtime but still keep a subset.
 if is_plat("linux") then
+    add_requires("alsa-lib 1.2.10", { system = false })
     add_requires("libx11", { system = true })
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     add_requires("libglvnd", { system = true })
     add_requires("libxcb", { system = true })
+elseif is_plat("macos") then
+    add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
 
 -- 
@@ -55,6 +57,10 @@ end
 -- which I should never touch it myself.
 --
 -- Will check with xmake team for further diagnose.
+--
+-- TODO for macos
+-- Appears we need to make sure system installs glibtoolize binary via
+-- ``brew install libtool``, in order to build libuv under macOS.
 
 -----------------------------------------------------------------
 -- Utility functions
@@ -72,6 +78,8 @@ function binary_link_flags(target)
         target:add("ldflags", "-static-libstdc++")
         target:add("ldflags", "-Wl,--export-dynamic")
         target:add("ldflags", "-Wl,--no-undefined")
+    elseif target:is_plat("macosx") then
+        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
 end
 
@@ -83,7 +91,8 @@ function dynlib_link_flags(target)
         target:add("shflags", "-static-libstdc++")
         target:add("shflags", "-Wl,--export-dynamic")
         target:add("shflags", "-Wl,--no-undefined")
-
+    elseif target:is_plat("macosx") then
+        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
 end
 
@@ -103,10 +112,9 @@ function compile_flags(target)
         target:add("cxflags", "-fno-omit-frame-pointer")
         target:add("cxflags", "-ftls-model=global-dynamic")
         target:add("cxflags", "-pthread")
+    elseif target:is_plat("macosx") then
+        target:add("cxflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
-    -- for macOS
-    -- target:add("defines", "GL_SILENCE_DEPRECATION")
-    -- target:add("defines", "openal_soft")
 end
 
 function bind_flags(...)
