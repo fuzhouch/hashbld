@@ -29,6 +29,7 @@ jobs:
           run: |
               apt update
               apt -y install software-properties-common
+              apt -y install python-software-properties
               add-apt-repository ppa:xmake-io/xmake
               apt update
               apt -y install xmake
