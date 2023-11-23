@@ -4,23 +4,30 @@ on:
   push:
     branches: [ main ]
 
+# Linux
+# We use Steam Runtime image to build hashlink from source code.
+# The job uses addnab/docker-run-action@v3 instead of jobs.build.container
+# introduced in official doc, because the code checkout step
+# actions/checkout@v3 uses a newer GLIBC_2.16 and GLIB_2.17 version,
+# which is unavailable in Steam runtime.
+#
+# REF: https://aschmelyun.com/blog/using-docker-run-inside-of-github-actions/
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
-      volumes:
-        - ${{github.workspace}}:/hashbld
-      options: --cpus 1
     steps:
       - name: checkout build scripts
         uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: install xmake tool
-        run: (add-apt-repository ppa:xmake-io/xmake && apt update && apt install xmake)
-      - name: checkout hashlink source code
-        run: (cd /hashbld && sh clone-code.sh)
-      - name: Run xmake to build project
-        run: (cd /hashbld && xmake build --verbose --yes --all)
+      - name: Build in Steam Runtime image
+        uses: addnab/docker-run-action@v3
+        with:
+          image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
+          options: --cpus 1 -v ${{github.workspace}}:/hashbld
+        run: |
+            add-apt-repository ppa:xmake-io/xmake && apt update && apt install xmake
+            cd /hashbld
+            sh clone-code.sh
+            xmake build --verbose --yes --all
