@@ -28,10 +28,10 @@ jobs:
           options: --cpus 1 -v ${{github.workspace}}:/hashbld
           run: |
               apt update
-              apt install software-properties-common
+              apt -y install software-properties-common
               add-apt-repository ppa:xmake-io/xmake
               apt update
-              apt install xmake
+              apt -y install xmake
               cd /hashbld
               bash clone-code.sh
               xmake build --verbose --yes --all
