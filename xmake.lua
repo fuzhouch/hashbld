@@ -18,8 +18,23 @@ add_requires("libui 2022.12.3", { system = false })
 add_requires("libuv v1.46.0", { system = false })
 add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
-add_requires("openal-soft 1.23.1", { system = true })
+add_requires("libsndio 1.9.0", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
+add_requires("libsdl 2.28.5", { system = false })
+add_requires("libogg v1.3.4", { system = false })
+add_requires("alsa-lib 1.2.10", { system = false })
+add_requires("python 3.11.3", { system = false })
+
+-- The following dependencies are required as platform must-have.
+-- The criteria is based on Steam runtime but still keep a subset.
+if is_plat("linux") then
+    add_requires("libx11", { system = true })
+    add_requires("openal", { system = true })
+    add_requires("openssl", { system = true })
+    add_requires("libglvnd", { system = true })
+    add_requires("libxcb", { system = true })
+end
+
 -- 
 -- TODO
 --
@@ -40,7 +55,6 @@ add_requires("libjpeg-turbo 2.1.4", { system = false })
 -- which I should never touch it myself.
 --
 -- Will check with xmake team for further diagnose.
-add_requires("libsdl 2.28.5", { system = false })
 
 -----------------------------------------------------------------
 -- Utility functions
@@ -52,7 +66,6 @@ end
 
 function binary_link_flags(target)
     if target:is_plat("linux") then
-        target:add("rpathdirs", ".")
         target:add("rpathdirs", "$ORIGIN")
         target:add("ldflags", "-lm")
         target:add("ldflags", "-static-libgcc")
@@ -64,7 +77,6 @@ end
 
 function dynlib_link_flags(target)
     if target:is_plat("linux") then
-        target:add("rpathdirs", ".")
         target:add("rpathdirs", "$ORIGIN")
         target:add("shflags", "-lm")
         target:add("shflags", "-static-libgcc")
@@ -79,7 +91,7 @@ function compile_flags(target)
     if target:is_plat("linux") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
-        target:add("defines", "AL_LIBTYPE_STATIC")
+        target:add("defines", "LIBHL_EXPORTS")
 
         -- Build location independent settings
         target:add("cflags", "-Wall")
@@ -91,10 +103,10 @@ function compile_flags(target)
         target:add("cxflags", "-fno-omit-frame-pointer")
         target:add("cxflags", "-ftls-model=global-dynamic")
         target:add("cxflags", "-pthread")
-        target:add("defines", "LIBHL_EXPORTS")
-        target:add("defines", "openal_soft")
-        target:add("defines", "GL_SILENCE_DEPRECATION")
     end
+    -- for macOS
+    -- target:add("defines", "GL_SILENCE_DEPRECATION")
+    -- target:add("defines", "openal_soft")
 end
 
 function bind_flags(...)
@@ -183,18 +195,23 @@ target("fmt")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/fmt/*.c")
     add_deps("libhl")
-    add_packages("mikktspace", "libvorbis", "minimp3", "zlib", "libpng", "libjpeg-turbo")
+    add_packages("mikktspace",
+                 "zlib",
+                 "minimp3", "libvorbis", "libogg",
+                 "libpng", "libjpeg-turbo")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
-target("ui")
-    set_kind("shared")
-    add_includedirs("hashlink/src")
-    add_files("hashlink/libs/ui/ui_stub.c")
-    add_packages("libui")
-    add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+-- For game development, there's no need to build libui. It's more for
+-- developing portable desktop application.
+-- target("ui")
+--    set_kind("shared")
+--    add_includedirs("hashlink/src")
+--    add_files("hashlink/libs/ui/ui_stub.c")
+--    add_packages("libui")
+--    add_deps("libhl")
+--    on_load(bind_flags(compile_flags, dynlib_link_flags))
+--  before_link(rename_hdll)
 
 target("uv")
     set_kind("shared")
@@ -228,7 +245,7 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    add_packages("openal-soft")
+    add_packages("xmake::alsa-lib", "xmake::libsndio", "openal")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
@@ -237,8 +254,10 @@ target("sdl")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
-    add_packages("libsdl")
     add_deps("libhl")
-    add_shflags("-lGL")
+    add_packages("libsdl", "libx11", "python", "openssl", "libglvnd", "libxcb")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
+
+    -- Missing DLL
+    -- libGLESv2 libGLX libOpenGL libxcb-dbe libxcb-xinput
