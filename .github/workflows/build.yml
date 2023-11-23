@@ -27,7 +27,9 @@ jobs:
           image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
           options: --cpus 1 -v ${{github.workspace}}:/hashbld
           run: |
-              add-apt-repository ppa:xmake-io/xmake && apt update && apt install xmake
+              add-apt-repository ppa:xmake-io/xmake
+              apt update
+              apt install xmake
               cd /hashbld
-              sh clone-code.sh
+              bash clone-code.sh
               xmake build --verbose --yes --all
