@@ -41,6 +41,6 @@ jobs:
               make install
               cd /hashbld
               bash clone-code.sh
-              /hashbld/xmake/buildroot/bin/xmake f --root -p steamrt --sdk=gcc
               /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
-              /hashbld/xmake/buildroot/bin/xmake build --plat=steamrt --root --verbose --yes --all
+              export steamrt=yes
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes --all
