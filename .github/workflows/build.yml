@@ -43,4 +43,8 @@ jobs:
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
               export steamrt=yes
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes hl libhl openal sdl sqlite ssl
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes hl
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes openal
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sdl
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sqlite
+              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes ssl
