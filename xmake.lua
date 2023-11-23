@@ -31,15 +31,16 @@ add_requires("python 3.11.3", { system = false })
 -- The following dependencies are required as platform must-have.
 -- The criteria is based on Steam runtime but still keep a subset.
 if is_plat("linux") or is_plat("steamrt") then
-    add_requires("libx11", { system = true })
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_plat("steamrt") then
         add_requires("libgl1-mesa-dev", { system = true })
         add_requires("libxcb1-dev", { system = true })
+        add_requires("libx11-dev", { system = true })
     else
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
+        add_requires("libx11", { system = true })
     end
 end
 
@@ -263,11 +264,11 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "libx11", "python", "openssl")
+    add_packages("libsdl", "python", "openssl")
     if is_plat("steamrt") then
-        add_requires("libgl1-mesa-dev", "libxcb1-dev)
+        add_packages("libgl1-mesa-dev", "libxcb1-dev", "libx11-dev")
     elseif is_plat("linux") then
-        add_packages("libglvnd", "libxcb")
+        add_packages("libglvnd", "libxcb", "libx11")
     end
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
