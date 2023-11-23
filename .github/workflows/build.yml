@@ -39,4 +39,4 @@ jobs:
               make install
               cd /hashbld
               bash clone-code.sh
-              /hashbld/xmake/buildroot/bin/xmake build --verbose --yes --all
+              /hashbld/xmake/buildroot/bin/xmake --root build --verbose --yes --all
