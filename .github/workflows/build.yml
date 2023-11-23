@@ -24,7 +24,7 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: Build in Steam Runtime image
+      - name: Build in Steam Runtime image (x86_64)
         uses: addnab/docker-run-action@v3
         with:
           image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
@@ -41,4 +41,5 @@ jobs:
               make install
               cd /hashbld
               bash clone-code.sh
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes --all
+              /hashbld/xmake/buildroot/bin/xmake config -a x86_64
+              /hashbld/xmake/buildroot/bin/xmake build --plat=steamrt --root --verbose --yes --all

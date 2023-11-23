@@ -7,6 +7,9 @@
 --    settings
 -- b) In Steam build Docker image, we use xmake generated Makefile.
 
+-- Let's define a platform, steamrt. We allow it to build binaries with
+-- Steam runtime.
+
 -- Dependencies of core
 -- add_requires("pcre 8.45", { system = false, configs = { bitwidth = 16 }})
 add_requires("mikktspace 2020.03.26", { system = false })
@@ -27,12 +30,17 @@ add_requires("python 3.11.3", { system = false })
 
 -- The following dependencies are required as platform must-have.
 -- The criteria is based on Steam runtime but still keep a subset.
-if is_plat("linux") then
+if is_plat("linux") or is_plat("steamrt") then
     add_requires("libx11", { system = true })
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
-    add_requires("libglvnd", { system = true })
-    add_requires("libxcb", { system = true })
+    if is_plat("steamrt") then
+        add_requires("libgl1-mesa-dev", { system = true })
+        add_requires("libxcb1-dev", { system = true })
+    else
+        add_requires("libglvnd", { system = true })
+        add_requires("libxcb", { system = true })
+    end
 end
 
 -- 
@@ -65,7 +73,7 @@ function rename_hdll (target)
 end
 
 function binary_link_flags(target)
-    if target:is_plat("linux") then
+    if target:is_plat("linux") or is_plat("steamrt") then
         target:add("rpathdirs", "$ORIGIN")
         target:add("ldflags", "-lm")
         target:add("ldflags", "-static-libgcc")
@@ -76,7 +84,7 @@ function binary_link_flags(target)
 end
 
 function dynlib_link_flags(target)
-    if target:is_plat("linux") then
+    if target:is_plat("linux") or is_plat("steamrt") then
         target:add("rpathdirs", "$ORIGIN")
         target:add("shflags", "-lm")
         target:add("shflags", "-static-libgcc")
@@ -88,7 +96,7 @@ function dynlib_link_flags(target)
 end
 
 function compile_flags(target)
-    if target:is_plat("linux") then
+    if target:is_plat("linux") or is_plat("steamrt") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
         target:add("defines", "LIBHL_EXPORTS")
@@ -255,7 +263,12 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "libx11", "python", "openssl", "libglvnd", "libxcb")
+    add_packages("libsdl", "libx11", "python", "openssl")
+    if is_plat("steamrt") then
+        add_requires("libgl1-mesa-dev", "libxcb1-dev)
+    elseif is_plat("linux") then
+        add_packages("libglvnd", "libxcb")
+    end
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
