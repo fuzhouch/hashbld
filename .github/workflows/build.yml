@@ -12,6 +12,9 @@ on:
 # which is unavailable in Steam runtime.
 #
 # REF: https://aschmelyun.com/blog/using-docker-run-inside-of-github-actions/
+#
+# NOTE 2: We can't default xmake ppa because Steam Runtime defines its
+# own /etc/lsb-release to SteamRT. We have to build it from source.
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,12 +30,13 @@ jobs:
           image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
           options: --cpus 1 -v ${{github.workspace}}:/hashbld
           run: |
-              apt update
-              apt -y install software-properties-common
-              apt -y install python-software-properties
-              add-apt-repository ppa:xmake-io/xmake
-              apt update
-              apt -y install xmake
+              cd /hashbld
+              git clone https://github.com/xmake-io/xmake
+              cd /hashbld/xmake
+              git submodule --init --recursive .
+              ./configure --prefix=/hashbld/xmake/buildroot
+              make
+              make install
               cd /hashbld
               bash clone-code.sh
-              xmake build --verbose --yes --all
+              /hashbld/xmake/buildroot/bin/xmake build --verbose --yes --all
