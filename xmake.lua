@@ -42,7 +42,6 @@ if is_plat("linux") then
         add_requires("apt::libxcb1-dev", { system = true })
         add_requires("apt::libx11-dev", { system = true })
     else
-        add_requires("libui 2022.12.3", { system = false, configs = {shared = false} })
         add_requires("libuv v1.46.0", { system = false })
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
@@ -241,7 +240,6 @@ target("ui")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ui/ui_stub.c")
     add_deps("libhl")
-    add_packages("libui", "glib")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
