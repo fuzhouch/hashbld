@@ -44,7 +44,7 @@ jobs:
               cd /hashbld
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake global --root --theme=plain
-              /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64 -p cross --toolchain=steamrt-clang38 --sdk=/usr/lib/llvm-3.8/lib/clang 
+              /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64 -p linux --toolchain=clang --sdk=/usr/lib/llvm-3.8/lib/clang 
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
 
               
