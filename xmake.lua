@@ -34,6 +34,7 @@ end
 -- The following dependencies are required as platform must-have.
 -- The criteria is based on Steam runtime but still keep a subset.
 if is_plat("linux") then
+    add_requires("glib 2.78.1", { system = false })
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_steamrt() then
@@ -41,7 +42,7 @@ if is_plat("linux") then
         add_requires("apt::libxcb1-dev", { system = true })
         add_requires("apt::libx11-dev", { system = true })
     else
-        add_requires("libui 2022.12.3", { system = false })
+        add_requires("libui 2022.12.3", { system = false, configs = {shared = false} })
         add_requires("libuv v1.46.0", { system = false })
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
@@ -216,16 +217,14 @@ target("fmt")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
--- For game development, there's no need to build libui. It's more for
--- developing portable desktop application.
--- target("ui")
---    set_kind("shared")
---    add_includedirs("hashlink/src")
---    add_files("hashlink/libs/ui/ui_stub.c")
---    add_packages("libui")
---    add_deps("libhl")
---    on_load(bind_flags(compile_flags, dynlib_link_flags))
---  before_link(rename_hdll)
+target("ui")
+    set_kind("shared")
+    add_includedirs("hashlink/src")
+    add_files("hashlink/libs/ui/ui_stub.c")
+    add_deps("libhl")
+    add_packages("libui", "glib")
+    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    before_link(rename_hdll)
 
 target("uv")
     set_kind("shared")
