@@ -2,7 +2,7 @@ name: CI pipeline for building Hashlink
 
 on:
   push:
-    branches: [ main ]
+    branches: [ linux-ci ]
 
 # Linux
 # We use Steam Runtime image to build hashlink from source code.
