@@ -67,6 +67,7 @@ toolchain("steamrt-clang38")
     set_toolset("as", "clang")
 
     add_cxflags("-std=gnu99")
+toolchain_end()
 
 -- 
 -- TODO
