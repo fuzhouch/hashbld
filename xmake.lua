@@ -50,6 +50,24 @@ if is_plat("linux") then
     end
 end
 
+-- define toolchain for StreamRT
+--
+toolchain("steamrt-clang38")
+    set_kind("standalone")
+
+    set_toolset("cc", "clang")
+    set_toolset("cxx", "clang", "clang++")
+    set_toolset("ld", "clang++", "clang")
+    set_toolset("sh", "clang++", "clang")
+    set_toolset("ar", "ar")
+    set_toolset("ex", "ar")
+    set_toolset("strip", "strip")
+    set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
+    set_toolset("as", "clang")
+
+    add_cxflags("-std=gnu99")
+
 -- 
 -- TODO
 --

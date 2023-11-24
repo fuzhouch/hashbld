@@ -33,24 +33,25 @@ jobs:
           options: --cpus 1 -v ${{github.workspace}}:/hashbld
           run: |
               apt update
-              apt -y install unzip
+              apt -y install unzip > /dev/null 2>&1
               cd /hashbld
               git clone https://github.com/xmake-io/xmake
               cd /hashbld/xmake
               git submodule update --init --recursive .
-              ./configure --prefix=/hashbld/xmake/buildroot
-              make
-              make install
+              ./configure --prefix=/hashbld/xmake/buildroot > /dev/null 2>&1
+              make > /dev/null 2>&1
+              make install > /dev/null 2>&1
               cd /hashbld
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
-              /hashbld/xmake/buildroot/bin/xmake config --sdk=/usr/lib/llvm-3.8/lib/clang --toolchain=clang
+              /hashbld/xmake/buildroot/bin/xmake config --root --theme=plain
+              /hashbld/xmake/buildroot/bin/xmake config --sdk=/usr/lib/llvm-3.8/lib/clang --toolchain=steamrt-clang38
               export steamrt=yes
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes hl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes fmt
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes openal
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sdl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sqlite
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes ssl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes uv
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes ui
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
