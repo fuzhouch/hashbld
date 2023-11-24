@@ -43,15 +43,17 @@ jobs:
               make install > /dev/null 2>&1
               cd /hashbld
               bash clone-code.sh
+              /hashbld/xmake/buildroot/bin/xmake global --root --theme=plain
               /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
-              /hashbld/xmake/buildroot/bin/xmake config --root --theme=plain
               /hashbld/xmake/buildroot/bin/xmake config --sdk=/usr/lib/llvm-3.8/lib/clang --toolchain=steamrt-clang38
               export steamrt=yes
               /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
+
+              
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+# /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
