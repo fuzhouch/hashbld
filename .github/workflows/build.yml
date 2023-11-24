@@ -47,7 +47,7 @@ jobs:
               /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
               /hashbld/xmake/buildroot/bin/xmake config --sdk=/usr/lib/llvm-3.8/lib/clang --toolchain=steamrt-clang38
               export steamrt=yes
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
 
               
 # /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
