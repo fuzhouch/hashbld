@@ -34,7 +34,6 @@ end
 -- The following dependencies are required as platform must-have.
 -- The criteria is based on Steam runtime but still keep a subset.
 if is_plat("linux") then
-    add_requires("glib 2.78.1", { system = false })
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_steamrt() then
