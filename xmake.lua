@@ -18,7 +18,6 @@ add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libogg v1.3.4", { system = false })
-add_requires("python 3.11.3", { system = false })
 
 function is_steamrt()
     local value = os.getenv("steamrt")
@@ -294,7 +293,7 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "python", "openssl")
+    add_packages("libsdl", "openssl")
     if is_plat("linux") then
         if is_steamrt() then
             add_packages("libgl1-mesa-dev", "libxcb1-dev", "libx11-dev")

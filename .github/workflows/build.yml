@@ -48,11 +48,11 @@ jobs:
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux --toolchain=steamrt-gcc9 --sdk=/usr
             
               
-# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl            
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
-# /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes libhl
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+# steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
