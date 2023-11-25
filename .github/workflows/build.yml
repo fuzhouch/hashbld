@@ -33,7 +33,7 @@ jobs:
           options: --cpus 1 -v ${{github.workspace}}:/hashbld
           run: |
               apt update
-              apt -y install unzip > /dev/null 2>&1
+              apt -y install unzip expat > /dev/null 2>&1
               cd /hashbld
               git clone https://github.com/xmake-io/xmake
               cd /hashbld/xmake

@@ -16,8 +16,8 @@ add_requires("minimp3 2021.05.29", { system = false })
 add_requires("zlib v1.3", { system = false })
 add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
-add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libsdl 2.28.5", { system = false })
+add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libogg v1.3.4", { system = false })
 add_requires("python 3.11.3", { system = false })
 
@@ -35,7 +35,6 @@ if is_plat("linux") then
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_steamrt() then
-        add_requires("expat 2.5.0", { system = false })
         add_requires("apt::libasound2-dev", { system = true })
         add_requires("apt::libgl1-mesa-dev", { system = true })
         add_requires("apt::libxcb1-dev", { system = true })
