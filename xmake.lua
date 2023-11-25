@@ -66,6 +66,7 @@ toolchain("steamrt-gcc9")
     set_toolset("as", "gcc")
 
     add_cxflags("-std=gnu99")
+    add_ldflags("-pthread")
 toolchain_end()
 
 -- 
