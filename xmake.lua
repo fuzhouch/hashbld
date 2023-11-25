@@ -16,7 +16,6 @@ add_requires("minimp3 2021.05.29", { system = false })
 add_requires("zlib v1.3", { system = false })
 add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
-add_requires("libsndio 1.9.0", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libsdl 2.28.5", { system = false })
 add_requires("libogg v1.3.4", { system = false })
@@ -36,10 +35,13 @@ if is_plat("linux") then
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
     if is_steamrt() then
+        add_requires("apt::libasound2-dev", { system = true })
         add_requires("apt::libgl1-mesa-dev", { system = true })
         add_requires("apt::libxcb1-dev", { system = true })
         add_requires("apt::libx11-dev", { system = true })
     else
+        add_requires("alsa-lib 1.2.10")
+        add_requires("libsndio 1.9.0", { system = false })
         add_requires("libuv v1.46.0", { system = false })
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
@@ -67,6 +69,7 @@ toolchain("steamrt-gcc9")
 
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
+    add_ldflags("-ldl")
 toolchain_end()
 
 -- 
@@ -282,7 +285,7 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    add_packages("xmake::alsa-lib", "xmake::libsndio", "openal")
+    add_packages("openal")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
