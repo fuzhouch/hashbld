@@ -51,19 +51,19 @@ end
 
 -- define toolchain for StreamRT
 --
-toolchain("steamrt-clang38")
+toolchain("steamrt-gcc9")
     set_kind("standalone")
 
-    set_toolset("cc", "clang")
-    set_toolset("cxx", "clang", "clang++")
-    set_toolset("ld", "clang++", "clang")
-    set_toolset("sh", "clang++", "clang")
+    set_toolset("cc", "gcc")
+    set_toolset("cxx", "gcc", "g++")
+    set_toolset("ld", "g++", "gcc")
+    set_toolset("sh", "g++", "gcc")
     set_toolset("ar", "ar")
     set_toolset("ex", "ar")
     set_toolset("strip", "strip")
-    set_toolset("mm", "clang")
-    set_toolset("mxx", "clang", "clang++")
-    set_toolset("as", "clang")
+    set_toolset("mm", "gcc")
+    set_toolset("mxx", "gcc", "g++")
+    set_toolset("as", "gcc")
 
     add_cxflags("-std=gnu99")
 toolchain_end()
