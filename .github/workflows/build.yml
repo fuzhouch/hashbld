@@ -52,6 +52,6 @@ jobs:
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
