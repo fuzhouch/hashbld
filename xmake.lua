@@ -51,25 +51,25 @@ end
 
 -- define toolchain for StreamRT
 --
-toolchain("steamrt-gcc")
+toolchain("steamrt")
     set_kind("standalone")
 
-    set_toolset("cc", "gcc")
-    set_toolset("cxx", "gcc", "g++")
-    set_toolset("ld", "g++", "gcc")
-    set_toolset("sh", "g++", "gcc")
+    set_toolset("cc", "clang")
+    set_toolset("cxx", "clang", "clang++")
+    set_toolset("ld", "clang++", "clang")
+    set_toolset("sh", "clang++", "clang")
     set_toolset("ar", "ar")
     set_toolset("ex", "ar")
     set_toolset("strip", "strip")
-    set_toolset("mm", "gcc")
-    set_toolset("mxx", "gcc", "g++")
-    set_toolset("as", "gcc")
+    set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
+    set_toolset("as", "clang")
 
     -- Due to uknown reason, SteamRT puts stdatomic.h in a different
     -- place instead of /usr/include. Let's add it manually.
-    add_includedirs("steamrt/include", "/usr/lib/gcc/x86_64-linux-gnu/5/include")
+    add_includedirs("steamrt/include", "/usr/include", "/usr/lib/llvm-3.6/lib/clang/3.6.0/include")
 
-    add_cxflags("-std=gnu99")
+    add_cxflags("-std=c99")
 
     add_ldflags("-pthread")
     add_ldflags("-ldl")
