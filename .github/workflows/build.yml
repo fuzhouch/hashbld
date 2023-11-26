@@ -30,11 +30,6 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: Update environment tools
-        run: |
-              apt update
-              apt -y install unzip
-              apt -y install expat
       - name: Install xmake tool
         run: |
               cd /hashbld
