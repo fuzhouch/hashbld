@@ -32,25 +32,23 @@ jobs:
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
       - name: Install xmake tool
         run: |
-              cd /hashbld
               git clone https://github.com/xmake-io/xmake
-              cd /hashbld/xmake
+              cd ./xmake
               git submodule update --init --recursive .
               ./configure --prefix=/hashbld/xmake/buildroot > /dev/null 2>&1
               make > /dev/null 2>&1
               make install > /dev/null 2>&1
       - name: Build Linux (x86_64)
         run: |
-              cd /hashbld
               bash clone-code.sh
-              /hashbld/xmake/buildroot/bin/xmake global --root --yes --theme=plain
-              /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux
-              /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
-              # /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+              ./xmake/buildroot/bin/xmake global --root --yes --theme=plain
+              ./xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux
+              ./xmake/buildroot/bin/xmake build --root --yes --verbose libhl
+              # ./xmake/buildroot/bin/xmake build --root --yes hl
+              # ./xmake/buildroot/bin/xmake build --root --yes fmt
+              # ./xmake/buildroot/bin/xmake build --root --yes sqlite
+              # ./xmake/buildroot/bin/xmake build --root --yes ssl
+              # ./xmake/buildroot/bin/xmake build --root --yes ui
+              # ./xmake/buildroot/bin/xmake build --root --yes sdl
+              # ./xmake/buildroot/bin/xmake build --root --yes openal
+              # ./xmake/buildroot/bin/xmake build --root --yes uv
