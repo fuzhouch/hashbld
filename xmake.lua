@@ -65,10 +65,13 @@ toolchain("steamrt-gcc9")
     set_toolset("mxx", "gcc", "g++")
     set_toolset("as", "gcc")
 
+    add_includedirs("steamrt/include")
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
     add_ldflags("-ldl")
-    add_includedirs("steamrt/include")
+    add_ldflags("-lrt")
+    add_shflags("-pthread")
+    add_shflags("-lrt")
 toolchain_end()
 
 -- 
@@ -125,7 +128,6 @@ function dynlib_link_flags(target)
         target:add("shflags", "-static-libstdc++")
         target:add("shflags", "-Wl,--export-dynamic")
         target:add("shflags", "-Wl,--no-undefined")
-        target:add("shflags", "-pthread")
     elseif target:is_plat("macosx") then
         target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
