@@ -32,23 +32,18 @@ jobs:
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
       - name: Install xmake tool
         run: |
-              git clone https://github.com/xmake-io/xmake
-              cd ./xmake
-              git submodule update --init --recursive .
-              ./configure --prefix=./xmake/buildroot
-              make
-              make install
+              apt-get -y install xmake
       - name: Build Linux (x86_64)
         run: |
               bash clone-code.sh
-              ./xmake/buildroot/bin/xmake global --root --yes --theme=plain
-              ./xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux
-              ./xmake/buildroot/bin/xmake build --root --yes --verbose libhl
-              # ./xmake/buildroot/bin/xmake build --root --yes hl
-              # ./xmake/buildroot/bin/xmake build --root --yes fmt
-              # ./xmake/buildroot/bin/xmake build --root --yes sqlite
-              # ./xmake/buildroot/bin/xmake build --root --yes ssl
-              # ./xmake/buildroot/bin/xmake build --root --yes ui
-              # ./xmake/buildroot/bin/xmake build --root --yes sdl
-              # ./xmake/buildroot/bin/xmake build --root --yes openal
-              # ./xmake/buildroot/bin/xmake build --root --yes uv
+              xmake global --root --yes --theme=plain
+              xmake config --root --yes --verbose -a x86_64 -p linux
+              xmake build --root --yes --verbose libhl
+              # xmake build --root --yes hl
+              # xmake build --root --yes fmt
+              # xmake build --root --yes sqlite
+              # xmake build --root --yes ssl
+              # xmake build --root --yes ui
+              # xmake build --root --yes sdl
+              # xmake build --root --yes openal
+              # xmake build --root --yes uv
