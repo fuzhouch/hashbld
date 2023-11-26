@@ -9,15 +9,15 @@
 --
 -- ===================================================================
 add_requires("mikktspace 2020.03.26", { system = false })
-add_requires("libvorbis 1.3.7", { system = false })
-add_requires("libpng v1.6.40", { system = false })
-add_requires("minimp3 2021.05.29", { system = false })
-add_requires("zlib v1.3", { system = false })
-add_requires("sqlite3 3.43.0+200", { system = false })
-add_requires("mbedtls 2.28.3", { system = false })
-add_requires("libjpeg-turbo 2.1.4", { system = false })
-add_requires("libogg v1.3.4", { system = false })
-add_requires("libuv v1.46.0", { system = false })
+add_requires("libvorbis 1.3.7",       { system = false })
+add_requires("libpng v1.6.40",        { system = false })
+add_requires("minimp3 2021.05.29",    { system = false })
+add_requires("zlib v1.3",             { system = false })
+add_requires("sqlite3 3.43.0+200",    { system = false })
+add_requires("mbedtls 2.28.3",        { system = false })
+add_requires("libjpeg-turbo 2.1.4",   { system = false })
+add_requires("libogg v1.3.4",         { system = false })
+add_requires("libuv v1.46.0",         { system = false })
 
 -- ===================================================================
 -- OS-specific dependencies
@@ -27,12 +27,12 @@ add_requires("libuv v1.46.0", { system = false })
 -- Operating System. 
 -- ===================================================================
 if is_plat("linux") then
-    add_requires("openal", { system = true })
-    add_requires("openssl", { system = true })
-    add_requires("libsdl 2.28.5", { system = false })
-    add_requires("libglvnd", { system = true })
-    add_requires("libxcb", { system = true })
-    add_requires("libx11", { system = true })
+    add_requires("libsdl 2.28.5",   { system = false })
+    add_requires("libglvnd v1.3.4", { system = false })
+    add_requires("libx11 1.8.1",    { system = false })
+    add_requires("libxcb 1.14",     { system = false })
+    add_requires("openssl",         { system = true  })
+    add_requires("openal",          { system = true  })
 elseif is_plat("macos") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
@@ -252,8 +252,7 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "openssl")
-    add_packages("libglvnd", "libxcb", "libx11")
+    add_packages("libsdl", "libglvnd", "libxcb", "libx11")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
