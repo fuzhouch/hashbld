@@ -46,13 +46,12 @@ jobs:
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake global --root --yes --theme=plain
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux --toolchain=steamrt --sdk=/usr/lib/gcc-9
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose --all
-
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
