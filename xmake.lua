@@ -51,7 +51,7 @@ end
 
 -- define toolchain for StreamRT
 --
-toolchain("steamrt")
+toolchain("steamrt-gcc")
     set_kind("standalone")
 
     set_toolset("cc", "gcc")
