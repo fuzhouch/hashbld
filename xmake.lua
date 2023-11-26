@@ -125,6 +125,7 @@ function dynlib_link_flags(target)
         target:add("shflags", "-static-libstdc++")
         target:add("shflags", "-Wl,--export-dynamic")
         target:add("shflags", "-Wl,--no-undefined")
+        target:add("shflags", "-pthread")
     elseif target:is_plat("macosx") then
         target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
