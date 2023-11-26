@@ -54,18 +54,20 @@ end
 toolchain("steamrt-gcc9")
     set_kind("standalone")
 
-    set_toolset("cc", "gcc")
-    set_toolset("cxx", "gcc", "g++")
-    set_toolset("ld", "g++", "gcc")
-    set_toolset("sh", "g++", "gcc")
+    set_toolset("cc", "gcc-9")
+    set_toolset("cxx", "gcc-9", "g++-9")
+    set_toolset("ld", "g++-9", "gcc-9")
+    set_toolset("sh", "g++-9", "gcc-9")
     set_toolset("ar", "ar")
     set_toolset("ex", "ar")
     set_toolset("strip", "strip")
-    set_toolset("mm", "gcc")
-    set_toolset("mxx", "gcc", "g++")
-    set_toolset("as", "gcc")
+    set_toolset("mm", "gcc-9")
+    set_toolset("mxx", "gcc-9", "g++-9")
+    set_toolset("as", "gcc-9")
 
-    add_includedirs("steamrt/include")
+    -- Due to uknown reason, SteamRT puts stdatomic.h in a different
+    -- place instead of /usr/include. Let's add it manually.
+    add_includedirs("steamrt/include", "/usr/lib/gcc-9/lib/gcc/x86_64-linux-gnu/9/include")
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
     add_ldflags("-ldl")
