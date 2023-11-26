@@ -44,14 +44,14 @@ jobs:
       - name: Build Linux (x86_64)
         run: |
               bash clone-code.sh
-              ./xmake-build/bin/xmake global --root --yes --theme=plain
-              ./xmake-build/bin/xmake config --root --yes --verbose -a x86_64 -p linux
-              ./xmake-build/bin/xmake build --root --yes --verbose libhl
-              # ./xmake-build/bin/xmake build --root --yes hl
-              # ./xmake-build/bin/xmake build --root --yes fmt
-              # ./xmake-build/bin/xmake build --root --yes sqlite
-              # ./xmake-build/bin/xmake build --root --yes ssl
-              # ./xmake-build/bin/xmake build --root --yes ui
-              # ./xmake-build/bin/xmake build --root --yes sdl
-              # ./xmake-build/bin/xmake build --root --yes openal
-              # ./xmake-build/bin/xmake build --root --yes uv
+              ./xmake-build/bin/xmake global --yes --theme=plain
+              ./xmake-build/bin/xmake config --yes --verbose -a x86_64 -p linux
+              ./xmake-build/bin/xmake build --yes --verbose libhl
+              # ./xmake-build/bin/xmake build --yes hl
+              # ./xmake-build/bin/xmake build --yes fmt
+              # ./xmake-build/bin/xmake build --yes sqlite
+              # ./xmake-build/bin/xmake build --yes ssl
+              # ./xmake-build/bin/xmake build --yes ui
+              # ./xmake-build/bin/xmake build --yes sdl
+              # ./xmake-build/bin/xmake build --yes openal
+              # ./xmake-build/bin/xmake build --yes uv
