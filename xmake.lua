@@ -18,6 +18,7 @@ add_requires("sqlite3 3.43.0+200", { system = false })
 add_requires("mbedtls 2.28.3", { system = false })
 add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libogg v1.3.4", { system = false })
+add_requires("libuv v1.46.0", { system = false })
 
 function is_steamrt()
     local value = os.getenv("steamrt")
@@ -40,7 +41,6 @@ if is_plat("linux") then
         add_requires("apt::libx11-dev", { system = true })
     else
         add_requires("libsdl 2.28.5", { system = false })
-        add_requires("libuv v1.46.0", { system = false })
         add_requires("libglvnd", { system = true })
         add_requires("libxcb", { system = true })
         add_requires("libx11", { system = true })
