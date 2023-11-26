@@ -166,7 +166,7 @@ end
 target("libhl")
     set_kind("shared")
     set_basename("hl")
-    add_includedirs("hashlink/src")
+    add_includedirs("hashlink/src", "hashlink/include")
     add_files("hashlink/src/std/array.c",
               "hashlink/src/std/buffer.c",
               "hashlink/src/std/bytes.c",
