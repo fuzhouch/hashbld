@@ -36,11 +36,9 @@ jobs:
               git clone https://github.com/xmake-io/xmake
               cd ./xmake
               git submodule update --init --recursive .
-              ./configure --prefix=./xmake-build
+              ./configure --prefix=../xmake-build
               make
               make install
-              ls -l ./xmake-build
-              ls -l ./xmake-build/bin
       - name: Build Linux (x86_64)
         run: |
               bash clone-code.sh
