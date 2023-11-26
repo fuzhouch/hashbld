@@ -45,7 +45,7 @@ jobs:
               cd /hashbld
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake global --root --yes --theme=plain
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux --toolchain=steamrt --sdk=/usr
+              steamrt=yes /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux --toolchain=steamrt --sdk=/usr/lib/gcc-9
               steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose --all
 
               # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
