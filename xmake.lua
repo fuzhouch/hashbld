@@ -68,7 +68,7 @@ toolchain("steamrt-gcc9")
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
     add_ldflags("-ldl")
-    add_includedirs("streamrt/include")
+    add_includedirs("steamrt/include")
 toolchain_end()
 
 -- 
