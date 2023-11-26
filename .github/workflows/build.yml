@@ -4,19 +4,23 @@ on:
   push:
     branches: [ linux-ci ]
 
-# Linux
-# We use Steam Runtime image to build hashlink from source code.
-# The job uses addnab/docker-run-action@v3 instead of jobs.build.container
-# introduced in official doc, because the code checkout step
-# actions/checkout@v3 uses a newer GLIBC_2.16 and GLIB_2.17 version,
-# which is unavailable in Steam runtime.
+# Tips for Linux
 #
+# We build the system on Ubuntu (but not SteamRT). This is because
+# none of the compilers with SteamRT can correctly compile
+# libuv (builtin 4.8.8 - no stdatomic.h, clang 3.6/3.8 and gcc-9 stuck
+# at compilation.
+#
+# For a purpose of maximizing compatibility, we maintain our
+# dependencies as much as possible.
+#
+# Inc case we use updated SteamRT in the future, We can use 
+# addnab/docker-run-action@v3 job to run commnds in container.
 # REF: https://aschmelyun.com/blog/using-docker-run-inside-of-github-actions/
 #
-# NOTE 2: We can't default xmake ppa because Steam Runtime defines its
-# own /etc/lsb-release to SteamRT. We have to build it from source.
-#
-# TODO: Shall we use clang 3.8 (integrated) to build Steam version?
+# NOTE for xmake: We can't default xmake ppa because Steam Runtime
+# defines its own /etc/lsb-release to SteamRT. We have to build it
+# from source.
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,15 +30,13 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: Build in Steam Runtime image (x86_64)
-        uses: addnab/docker-run-action@v3
-        with:
-          image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
-          options: --cpus 1 -v ${{github.workspace}}:/hashbld
-          run: |
+      - name: Update environment tools
+        run: |
               apt update
               apt -y install unzip
               apt -y install expat
+      - name: Install xmake tool
+        run: |
               cd /hashbld
               git clone https://github.com/xmake-io/xmake
               cd /hashbld/xmake
@@ -42,16 +44,18 @@ jobs:
               ./configure --prefix=/hashbld/xmake/buildroot > /dev/null 2>&1
               make > /dev/null 2>&1
               make install > /dev/null 2>&1
+      - name: Build Linux (x86_64)
+        run: |
               cd /hashbld
               bash clone-code.sh
               /hashbld/xmake/buildroot/bin/xmake global --root --yes --theme=plain
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux --toolchain=steamrt --sdk=/usr/lib/llvm-3.6
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
-              steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
-              # steamrt=yes /hashbld/xmake/buildroot/bin/xmake build --root --yes uv
+              /hashbld/xmake/buildroot/bin/xmake config --root --yes --verbose -a x86_64 -p linux
+              /hashbld/xmake/buildroot/bin/xmake build --root --yes --verbose libhl
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes hl
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes fmt
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes sqlite
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes ssl
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes ui
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes sdl
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes openal
+              # /hashbld/xmake/buildroot/bin/xmake build --root --yes uv

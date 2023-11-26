@@ -1,14 +1,13 @@
 -- This xmake.lua build file is designed as a replacement of
 -- Makefile or CMakeLists.txt of standard hashlink releases.
---
--- The idea is to maximize the flexibility provided by xmake, that
--- 
--- a) In most desktop platforms, we use xmake, minimize per-compiler
---    settings
--- b) In Steam build Docker image, we use xmake generated Makefile.
 
--- Dependencies of core
--- add_requires("pcre 8.45", { system = false, configs = { bitwidth = 16 }})
+-- ===================================================================
+-- Common dependendies
+--
+-- These dependencies are downloaded and built with hashlink. We don't
+-- use any OS provided packages.
+--
+-- ===================================================================
 add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7", { system = false })
 add_requires("libpng v1.6.40", { system = false })
@@ -20,93 +19,44 @@ add_requires("libjpeg-turbo 2.1.4", { system = false })
 add_requires("libogg v1.3.4", { system = false })
 add_requires("libuv v1.46.0", { system = false })
 
-function is_steamrt()
-    local value = os.getenv("steamrt")
-    if value == nil then
-        return false
-    end
-    return true
-end
-
--- The following dependencies are required as platform must-have.
--- The criteria is based on Steam runtime but still keep a subset.
+-- ===================================================================
+-- OS-specific dependencies
+--
+-- The following dependencies are expected to be provided by Opearting
+-- systems, as they directly rely on infrastructure provided by
+-- Operating System. 
+-- ===================================================================
 if is_plat("linux") then
     add_requires("openal", { system = true })
     add_requires("openssl", { system = true })
-    if is_steamrt() then
-        add_requires("apt::libsdl2-dev", { alias = "libsdl", system = true })
-        add_requires("apt::libasound2-dev", { system = true })
-        add_requires("apt::libgl1-mesa-dev", { system = true })
-        add_requires("apt::libxcb1-dev", { system = true })
-        add_requires("apt::libx11-dev", { system = true })
-    else
-        add_requires("libsdl 2.28.5", { system = false })
-        add_requires("libglvnd", { system = true })
-        add_requires("libxcb", { system = true })
-        add_requires("libx11", { system = true })
-    end
+    add_requires("libsdl 2.28.5", { system = false })
+    add_requires("libglvnd", { system = true })
+    add_requires("libxcb", { system = true })
+    add_requires("libx11", { system = true })
 elseif is_plat("macos") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
 
--- define toolchain for StreamRT
 --
-toolchain("steamrt")
-    set_kind("standalone")
-
-    set_toolset("cc", "clang")
-    set_toolset("cxx", "clang", "clang++")
-    set_toolset("ld", "clang++", "clang")
-    set_toolset("sh", "clang++", "clang")
-    set_toolset("ar", "ar")
-    set_toolset("ex", "ar")
-    set_toolset("strip", "strip")
-    set_toolset("mm", "clang")
-    set_toolset("mxx", "clang", "clang++")
-    set_toolset("as", "clang")
-
-    -- Due to uknown reason, SteamRT puts stdatomic.h in a different
-    -- place instead of /usr/include. Let's add it manually.
-    add_includedirs("steamrt/include", "/usr/include", "/usr/lib/llvm-3.6/lib/clang/3.6.0/include")
-
-    add_cxflags("-std=c99")
-
-    add_ldflags("-pthread")
-    add_ldflags("-ldl")
-    add_ldflags("-lrt")
-
-    add_shflags("-pthread")
-    add_shflags("-lrt")
-toolchain_end()
-
--- 
--- TODO
+-- NOTE for Arch/Manjaro
 --
--- I have to apply an external fix to build libsdl in Manjaro system,
--- that I need to create an /usr/include/X11/X11 symbolic link
--- pointing to /usr/include/X11. That means, we must allow access to
--- X11 headers in a path like /usr/include/X11/X11/Xext.h.
+-- To build the project in Arch/Manjaro system, please add a
+-- self-pointing symbolic link fir path /usr/include/X11:
 --
--- This is caused by libsdl/cmake/sdlchecks.cmake, that it searches system
--- folders to find X11 header files. However it does not include
--- /usr/include. For an unknown reason, it works for manual cmake
--- configuration but does not work when xmake builds libsdl from source
--- code as a dependency. A possile theory is xmake applies a more strict
--- search path limitation, which does not allow searching /usr/include.
+-- ln -s /usr/include/X11 /usr/include/X11/X11.
 --
--- If my theory is true, then it may not make sense to ask xmake fix it,
--- because X11 code are intended to be considered as an OS-level infra,
--- which I should never touch it myself.
+-- This is to fix a bug in SDL2's cmake/sdlcheck.cmake. It hardcodes a
+-- set of search path to find Xext.h. However it does not hardcodes
+-- /usr/include, which is where Arch/Manjaro saves Xext.h.
 --
--- Will check with xmake team for further diagnose.
---
--- TODO for macos
+-- NOTE for macos
 -- Appears we need to make sure system installs glibtoolize binary via
 -- ``brew install libtool``, in order to build libuv under macOS.
+--
 
------------------------------------------------------------------
--- Utility functions
------------------------------------------------------------------
+-- ===================================================================
+-- Utility functions to define compile options.
+-- ===================================================================
 
 function rename_hdll (target)
     target:set("filename", target:basename() .. ".hdll")
@@ -168,9 +118,9 @@ function bind_flags(...)
     end
 end
 
------------------------------------------------------------------
--- Hashlink standard library
------------------------------------------------------------------
+-- ===================================================================
+-- Project build settings
+-- ===================================================================
 target("libhl")
     set_kind("shared")
     set_basename("hl")
@@ -236,7 +186,7 @@ target("hl")
     on_load(bind_flags(compile_flags, binary_link_flags))
 
 -----------------------------------------------------------------
--- Below are libraries built with hashlink. Note that they also needs
+-- Below are Hashlink's built-in modules. Note that they also needs
 -- haxelib install commands to get Haxe interface, in order to access
 -- them.
 -----------------------------------------------------------------
@@ -303,13 +253,7 @@ target("sdl")
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
     add_packages("libsdl", "openssl")
-    if is_plat("linux") then
-        if is_steamrt() then
-            add_packages("libgl1-mesa-dev", "libxcb1-dev", "libx11-dev")
-        else
-            add_packages("libglvnd", "libxcb", "libx11")
-        end
-    end
+    add_packages("libglvnd", "libxcb", "libx11")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
     before_link(rename_hdll)
 
