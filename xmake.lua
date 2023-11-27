@@ -116,6 +116,7 @@ function compile_flags(target)
     if target:is_plat("linux") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
+        target:add("cflags", "-Isteamrt/include")
         target:add("defines", "LIBHL_EXPORTS")
 
         -- Build location independent settings
