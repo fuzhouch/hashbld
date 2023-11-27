@@ -106,7 +106,6 @@ jobs:
               mkdir -p hashlink/ci_fix/GL
               cp ci_fix/glu.h hashlink/ci_fix/GL/glu.h
               cp ci_fix/uchar.h hashlink/ci_fix/uchar.h
-               
               steamrt=yes ./xmake-build/bin/xmake global --root --yes --theme=plain
               steamrt=yes ./xmake-build/bin/xmake config --root --yes -a x86_64 -p linux --toolchain=steamrt_gcc9 --sdk=/usr/lib/gcc-9
               steamrt=yes ./xmake-build/bin/xmake build --root --yes libhl
@@ -121,6 +120,6 @@ jobs:
               echo ================================================
               echo Create package
               echo ================================================
-              ./xmake-build/bin/xmake install --root -o ./package --all
+              steamrt=yes ./xmake-build/bin/xmake install --root -o ./package --all
               rm -rf ./package/bin ./package/include
               mv ./package/lib/* ./package/
