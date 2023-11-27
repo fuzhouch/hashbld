@@ -100,6 +100,7 @@ jobs:
               mkdir -p hashlink/ci_fix/GL
               cp ci_fix/glu.h hashlink/ci_fix/GL/glu.h
               cp ci_fix/uchar.h hashlink/ci_fix/uchar.h
+              export steamrt=yes 
               ./xmake-build/bin/xmake global --root --yes --theme=plain
               ./xmake-build/bin/xmake config --root --yes -a x86_64 -p linux --toolchain=steamrt --sdk=/usr/lib/llvm-3.6
               ./xmake-build/bin/xmake build --root --yes libhl
@@ -109,7 +110,7 @@ jobs:
               ./xmake-build/bin/xmake build --root --yes ssl
               ./xmake-build/bin/xmake build --root --yes ui
               ./xmake-build/bin/xmake build --root --yes sdl
-              steamrt=yes ./xmake-build/bin/xmake build --root --yes openal
+              ./xmake-build/bin/xmake build --root --yes openal
               ./xmake-build/bin/xmake build --root --yes uv
               echo ================================================
               echo Create package
