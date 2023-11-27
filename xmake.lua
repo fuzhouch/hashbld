@@ -17,6 +17,7 @@ toolchain("steamrt")
 
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
+    add_ldflags("-lrt")
     add_includedirs("/usr/include", "/usr/lib/gcc-9/lib/gcc/x86_64-linux-gnu/9/include")
 toolchain_end()
 
