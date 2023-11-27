@@ -15,7 +15,7 @@ toolchain("steamrt")
     set_toolset("mxx", "clang", "clang++")
     set_toolset("as", "clang")
 
-    add_cxflags("-std=c99")
+    add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
     add_includedirs("/usr/include", "/usr/lib/llvm-3.8/lib/clang/3.8.0/include/")
 toolchain_end()
