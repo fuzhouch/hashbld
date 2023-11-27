@@ -12,12 +12,12 @@ add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7",       { system = false })
 add_requires("libpng v1.6.40",        { system = false })
 add_requires("minimp3 2021.05.29",    { system = false })
-add_requires("zlib v1.3",             { system = false })
 add_requires("sqlite3 3.43.0+200",    { system = false })
 add_requires("mbedtls 2.28.3",        { system = false })
 add_requires("libjpeg-turbo 2.1.4",   { system = false })
-add_requires("libogg v1.3.4",         { system = false })
 add_requires("libuv v1.46.0",         { system = false })
+add_requires("libogg v1.3.4",         { system = false, configs = { shared = false }})
+add_requires("zlib v1.3",             { system = false, configs = { shared = false }})
 
 -- ===================================================================
 -- OS-specific dependencies
@@ -29,8 +29,10 @@ add_requires("libuv v1.46.0",         { system = false })
 if is_plat("linux") then
     add_requires("libsdl 2.28.5",      { system = false })
     add_requires("libglvnd 1.3.4",     { system = false })
+    add_requires("alsa-lib 1.2.10",    { system = false })
+    add_requires("libsndio 1.9.0",     { system = false })
     add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
-elseif is_plat("macos") then
+elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
 
@@ -105,7 +107,8 @@ function compile_flags(target)
     end
 end
 
-function bind_flags(...)
+-- This function is used to combine multiple actions on same xmake hook.
+function chain_actions(...)
     local args = { ... }
     return function(target)
         for i, fun in ipairs(args) do
@@ -162,11 +165,16 @@ target("libhl")
               "hashlink/include/pcre/pcre16_valid_utf16.c",
               "hashlink/include/pcre/pcre_ucd.c")
     add_files("hashlink/src/gc.c")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
 -- Main executable
 -----------------------------------------------------------------
+function copy_to_lib(target)
+    local install_to = path.join(target:installdir(), "lib", target:filename())
+    os.cp(target:targetfile(), install_to)
+end
+
 target("hl")
     set_kind("binary")
     add_includedirs("hashlink/src")
@@ -178,7 +186,8 @@ target("hl")
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, binary_link_flags))
+    on_load(chain_actions(compile_flags, binary_link_flags))
+    after_install(copy_to_lib)
 
 -----------------------------------------------------------------
 -- Below are Hashlink's built-in modules. Note that they also needs
@@ -193,10 +202,10 @@ target("fmt")
     add_files("hashlink/libs/fmt/*.c")
     add_deps("libhl")
     add_packages("mikktspace",
-                 "zlib",
-                 "minimp3", "libvorbis", "libogg",
+                 "xmake::zlib",
+                 "minimp3", "libvorbis", "xmake::libogg",
                  "libpng", "libjpeg-turbo")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("ui")
     set_kind("shared")
@@ -205,7 +214,7 @@ target("ui")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ui/ui_stub.c")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("uv")
     set_kind("shared")
@@ -215,7 +224,7 @@ target("uv")
     add_files("hashlink/libs/uv/*.c")
     add_packages("libuv")
     add_deps("hl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("sqlite")
     set_kind("shared")
@@ -225,7 +234,7 @@ target("sqlite")
     add_files("hashlink/libs/sqlite/*.c")
     add_packages("sqlite3")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("ssl")
     set_kind("shared")
@@ -235,7 +244,7 @@ target("ssl")
     add_files("hashlink/libs/ssl/*.c")
     add_packages("mbedtls")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("openal")
     set_kind("shared")
@@ -244,8 +253,8 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    add_packages("openal")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    add_packages("openal", "alsa-lib", "libsndio")
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("sdl")
     set_kind("shared")
@@ -256,5 +265,5 @@ target("sdl")
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
     add_packages("libsdl", "libglvnd")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
