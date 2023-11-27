@@ -2,7 +2,7 @@
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
 
-toolchain("steamrt")
+toolchain("steamrt_gcc9")
     set_kind("standalone")
     set_toolset("cc", "gcc-9")
     set_toolset("cxx", "gcc-9", "g++-9")
