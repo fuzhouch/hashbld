@@ -2,7 +2,7 @@ name: CI pipeline for building Hashlink
 
 on:
   push:
-    branches: [ linux-ci ]
+    branches: [ main ]
 
 # Tips for Linux
 #
