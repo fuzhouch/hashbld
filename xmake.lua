@@ -30,8 +30,9 @@ if is_plat("linux") then
     add_requires("libsdl 2.28.5",      { system = false })
     add_requires("libglvnd 1.3.4",     { system = false })
     add_requires("alsa-lib 1.2.10",    { system = false })
+    -- libsndio.config.shared is read-only, always true.
     add_requires("libsndio 1.9.0",     { system = false })
-    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = false } })
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
@@ -88,9 +89,6 @@ function compile_flags(target)
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
         target:add("defines", "LIBHL_EXPORTS")
-        -- Define it when trying to statically link to OpenAL-soft
-        -- NOTE 2023-11: It does not work
-        -- target:add("defines", "AL_LIBTYPE_STATIC")
 
         -- Build location independent settings
         target:add("cflags", "-Wall")
@@ -251,7 +249,9 @@ target("openal")
     set_prefixname("")
     set_extension(".hdll")
     add_includedirs("hashlink/src")
-    add_files("hashlink/libs/openal/openal.c")
+    add_defines("AL_LIBTYPE_STATIC=1")
+
+    -- add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
     add_packages("openal", "alsa-lib", "libsndio")
     on_load(chain_actions(compile_flags, dynlib_link_flags))
