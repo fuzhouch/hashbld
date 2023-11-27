@@ -57,3 +57,9 @@ jobs:
               ./xmake-build/bin/xmake build --yes sdl
               ./xmake-build/bin/xmake build --yes openal
               ./xmake-build/bin/xmake build --yes uv
+      - name: Create package (x86_64)
+        run: |
+              ./xmake-build/bin/xmake install -o ./package --all
+              rm -rf ./package/bin ./package/include
+              mv ./package/lib/* ./package/
+              mv ./package/libopenal.* ./package/lib/

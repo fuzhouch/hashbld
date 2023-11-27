@@ -69,7 +69,11 @@ if is_plat("linux") then
     add_requires("alsa-lib 1.2.10",    { system = false })
     add_requires("libsndio 1.9.0",     { system = false })
 
-    add_requires("openal",             { system = true  })
+    -- We cannot ensure openal is installed in CI machine
+    -- Thus we have to build it with our own package.
+    -- When packaging the builds, we will separate libopenal.so.* to
+    -- different folders.
+    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
@@ -286,7 +290,6 @@ target("openal")
     set_prefixname("")
     set_extension(".hdll")
     add_includedirs("hashlink/src")
-    add_includedirs("hashlink/fakegl")
 
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
