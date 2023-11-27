@@ -14,6 +14,11 @@ toolchain("steamrt")
     set_toolset("mm", "clang")
     set_toolset("mxx", "clang", "clang++")
     set_toolset("as", "clang")
+
+    add_cxflags("-std=c99")
+    add_ldflags("-pthread")
+    add_ldflags("-ldl")
+    add_ldflags("-lrt")
 toolchain_end()
 
 -- ===================================================================
