@@ -2,23 +2,23 @@
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
 
-toolchain("steamrt_gcc9")
+toolchain("steamrt_clang36")
     set_kind("standalone")
-    set_toolset("cc", "gcc-9")
-    set_toolset("cxx", "gcc-9", "g++-9")
-    set_toolset("ld", "g++-9", "gcc-9")
-    set_toolset("sh", "g++-9", "gcc-9")
-    set_toolset("ar", "gcc-ar-9")
-    set_toolset("ex", "gcc-ar-9")
+    set_toolset("cc", "clang")
+    set_toolset("cxx", "clang", "clang++")
+    set_toolset("ld", "clang++", "clang")
+    set_toolset("sh", "clang++", "clang")
+    set_toolset("ar", "llvm-ar")
+    set_toolset("ex", "llvm-ar")
     set_toolset("strip", "strip")
-    set_toolset("mm", "gcc-9")
-    set_toolset("mxx", "gcc-9", "g++-9")
-    set_toolset("as", "gcc-9")
+    set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
+    set_toolset("as", "clang")
 
     add_cxflags("-std=gnu99")
     add_ldflags("-pthread")
     add_ldflags("-lrt")
-    add_includedirs("/usr/include", "/usr/lib/gcc-9/lib/gcc/x86_64-linux-gnu/9/include")
+    add_includedirs("/usr/include", "/usr/lib/llvm-3.6/lib/clang/3.6.0/include")
 toolchain_end()
 
 -- ===================================================================

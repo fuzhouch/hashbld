@@ -107,7 +107,7 @@ jobs:
               cp ci_fix/glu.h hashlink/ci_fix/GL/glu.h
               cp ci_fix/uchar.h hashlink/ci_fix/uchar.h
               steamrt=yes ./xmake-build/bin/xmake global --root --yes --theme=plain
-              steamrt=yes ./xmake-build/bin/xmake config --root --yes -a x86_64 -p linux --toolchain=steamrt_gcc9 --sdk=/usr/lib/gcc-9
+              steamrt=yes ./xmake-build/bin/xmake config --root --yes -a x86_64 -p linux --toolchain=steamrt_clang36 --sdk=/usr/lib/llvm-3.6
               steamrt=yes ./xmake-build/bin/xmake build --root --yes libhl
               steamrt=yes ./xmake-build/bin/xmake build --root --yes hl
               steamrt=yes ./xmake-build/bin/xmake build --root --yes fmt
