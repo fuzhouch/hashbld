@@ -80,6 +80,11 @@ jobs:
           options: -v ${{ github.workspace }}:/hashbld
           run: |
               echo ================================================
+              echo Install unzip for use with xmake
+              echo ================================================
+              apt update
+              apt install -y unzip
+              echo ================================================
               echo Build xmake
               echo ================================================
               cd /hashbld
