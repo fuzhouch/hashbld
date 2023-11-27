@@ -2,24 +2,6 @@
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
 
-toolchain("steamrt_clang36")
-    set_kind("standalone")
-    set_toolset("cc", "clang")
-    set_toolset("cxx", "clang", "clang++")
-    set_toolset("ld", "clang++", "clang")
-    set_toolset("sh", "clang++", "clang")
-    set_toolset("ar", "llvm-ar")
-    set_toolset("ex", "llvm-ar")
-    set_toolset("strip", "strip")
-    set_toolset("mm", "clang")
-    set_toolset("mxx", "clang", "clang++")
-    set_toolset("as", "clang")
-
-    add_ldflags("-pthread")
-    add_ldflags("-lrt")
-    add_includedirs("/usr/include", "/usr/lib/llvm-3.6/lib/clang/3.6.0/include")
-toolchain_end()
-
 -- ===================================================================
 -- Common dependendies
 --
@@ -90,13 +72,10 @@ if is_plat("linux") then
 
     -- We cannot ensure openal is installed in CI machine
     -- Thus we have to build it with our own package.
-    -- When packaging the builds, we will separate libopenal.so.* to
-    -- different folders.
-    if os.getenv("steamrt") == "yes" then
-        add_requires("apt::libopenal-dev", { alias = "openal", system = true })
-    else
-        add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
-    end
+    -- When packaging the builds, we separate libopenal.so.* to
+    -- different folders. This .so file is only used when system
+    -- default libopenal.so does not work.
+    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
