@@ -27,12 +27,9 @@ add_requires("libuv v1.46.0",         { system = false })
 -- Operating System. 
 -- ===================================================================
 if is_plat("linux") then
-    add_requires("libsdl 2.28.5",   { system = false })
-    add_requires("libglvnd v1.3.4", { system = false })
-    add_requires("libx11 1.8.1",    { system = false })
-    add_requires("libxcb 1.14",     { system = false })
-    add_requires("openssl",         { system = true  })
-    add_requires("openal",          { system = true  })
+    add_requires("libsdl 2.28.5",      { system = false })
+    add_requires("libglvnd 1.3.4",     { system = false })
+    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
 elseif is_plat("macos") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
@@ -57,10 +54,6 @@ end
 -- ===================================================================
 -- Utility functions to define compile options.
 -- ===================================================================
-
-function rename_hdll (target)
-    target:set("filename", target:basename() .. ".hdll")
-end
 
 function binary_link_flags(target)
     if target:is_plat("linux") then
@@ -93,6 +86,9 @@ function compile_flags(target)
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
         target:add("defines", "LIBHL_EXPORTS")
+        -- Define it when trying to statically link to OpenAL-soft
+        -- NOTE 2023-11: It does not work
+        -- target:add("defines", "AL_LIBTYPE_STATIC")
 
         -- Build location independent settings
         target:add("cflags", "-Wall")
@@ -166,7 +162,6 @@ target("libhl")
               "hashlink/include/pcre/pcre16_valid_utf16.c",
               "hashlink/include/pcre/pcre_ucd.c")
     add_files("hashlink/src/gc.c")
-    -- add_packages("pcre")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
@@ -192,6 +187,8 @@ target("hl")
 -----------------------------------------------------------------
 target("fmt")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/fmt/*.c")
     add_deps("libhl")
@@ -200,61 +197,64 @@ target("fmt")
                  "minimp3", "libvorbis", "libogg",
                  "libpng", "libjpeg-turbo")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("ui")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ui/ui_stub.c")
     add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("uv")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/uv/*.c")
     add_packages("libuv")
     add_deps("hl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("sqlite")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sqlite/*.c")
     add_packages("sqlite3")
     add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("ssl")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ssl/*.c")
     add_packages("mbedtls")
     add_deps("libhl")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("openal")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
     add_packages("openal")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
 target("sdl")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "libglvnd", "libxcb", "libx11")
+    add_packages("libsdl", "libglvnd")
     on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
 
-    -- Missing DLL
-    -- libGLESv2 libGLX libOpenGL libxcb-dbe libxcb-xinput
