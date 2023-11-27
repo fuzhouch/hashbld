@@ -85,11 +85,12 @@ jobs:
               cd /hashbld
               mkdir ./xmake-build/
               git clone https://github.com/xmake-io/xmake
-              cd ./xmake
+              pushd ./xmake
               git submodule update --init --recursive .
               ./configure --prefix=../xmake-build
               make
               make install
+              popd
               echo ================================================
               echo Clone Hashlink source code
               echo ================================================
