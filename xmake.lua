@@ -1,6 +1,21 @@
 -- This xmake.lua build file is designed as a replacement of
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
+
+toolchain("steamrt")
+    set_kind("standalone")
+    set_toolset("cc", "clang")
+    set_toolset("cxx", "clang", "clang++")
+    set_toolset("ld", "clang++", "clang")
+    set_toolset("sh", "clang++", "clang")
+    set_toolset("ar", "ar")
+    set_toolset("ex", "ar")
+    set_toolset("strip", "strip")
+    set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
+    set_toolset("as", "clang")
+toolchain_end()
+
 -- ===================================================================
 -- Common dependendies
 --
@@ -73,7 +88,11 @@ if is_plat("linux") then
     -- Thus we have to build it with our own package.
     -- When packaging the builds, we will separate libopenal.so.* to
     -- different folders.
-    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+    if os.getenv("steamrt") == "yes" then
+        add_requires("apt::libopenal-dev", { alias = "openal", system = true })
+    else
+        add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+    end
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end

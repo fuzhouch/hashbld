@@ -22,7 +22,7 @@ on:
 # defines its own /etc/lsb-release to SteamRT. We have to build it
 # from source.
 jobs:
-  build:
+  build_linux_x86_64_general:
     runs-on: ubuntu-latest
     steps:
       - name: checkout build scripts
@@ -65,3 +65,55 @@ jobs:
               rm -rf ./package/bin ./package/include
               mv ./package/lib/* ./package/
               mv ./package/libopenal.* ./package/lib/
+  build_steamrt_x86_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout build scripts
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+      - name: All-in-one build
+        uses: addnab/docker-run-action@v3
+        with:
+          image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
+          options: -v ${{ github.workspace }}:/hashbld
+          run: |
+              echo ================================================
+              echo Build xmake
+              echo ================================================
+              cd /hashbld
+              mkdir ./xmake-build/
+              git clone https://github.com/xmake-io/xmake
+              cd ./xmake
+              git submodule update --init --recursive .
+              ./configure --prefix=../xmake-build
+              make
+              make install
+              echo ================================================
+              echo Clone Hashlink source code
+              echo ================================================
+              bash clone-code.sh
+              echo ================================================
+              echo Fix header files.
+              echo ================================================
+              mkdir -p hashlink/ci_fix/GL
+              cp ci_fix/glu.h hashlink/ci_fix/GL/glu.h
+              cp ci_fix/uchar.h hashlink/ci_fix/uchar.h
+              ./xmake-build/bin/xmake global --root --yes --theme=plain
+              ./xmake-build/bin/xmake config --root --yes -a x86_64 -p linux --toolchain=steamrt --sdk=/usr/lib/llvm-3.6
+              ./xmake-build/bin/xmake build --root --yes libhl
+              ./xmake-build/bin/xmake build --root --yes hl
+              ./xmake-build/bin/xmake build --root --yes fmt
+              ./xmake-build/bin/xmake build --root --yes sqlite
+              ./xmake-build/bin/xmake build --root --yes ssl
+              ./xmake-build/bin/xmake build --root --yes ui
+              ./xmake-build/bin/xmake build --root --yes sdl
+              steamrt=yes ./xmake-build/bin/xmake build --root --yes openal
+              ./xmake-build/bin/xmake build --root --yes uv
+              echo ================================================
+              echo Create package
+              echo ================================================
+              ./xmake-build/bin/xmake install --root -o ./package --all
+              rm -rf ./package/bin ./package/include
+              mv ./package/lib/* ./package/
