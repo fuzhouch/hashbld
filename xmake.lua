@@ -300,7 +300,9 @@ target("sdl")
     set_kind("shared")
     set_prefixname("")
     set_extension(".hdll")
-    add_includedirs("hashlink/src")
+    -- Ci_fix folder contains only replaceable headers making hashlink
+    -- happy.
+    add_includedirs("hashlink/src", "hashlink/ci_fix")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
