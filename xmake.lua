@@ -7,6 +7,35 @@
 -- These dependencies are downloaded and built with hashlink. We don't
 -- use any OS provided packages.
 --
+-- We apply different strategies on different Operating systems:
+--
+-- On Linux, we maintain all dependencies ourselves, as static
+-- libraries. This is to make sure we eliminate any possible version
+-- mismatching issue in libstdc++.so and libgcc_s.so. The only
+-- exceptions are listed below:
+--
+-- 1. libsndio - No option to build as static library.
+-- 2. OpenGL - The "true" OpenGL. We depend on libglvnd to dispatch real
+--    calls, and libglvnd depends on true libraries on OS.
+--
+-- [TBD] On macOS, we use minimal set of system Frameworks.
+--
+-- [TBD] On Windows, we maintain all dependencies ourselves, as static
+-- libraries. This is because many dependencies are not installed by
+-- default on Windows.
+--
+--
+-- Potential issues
+--
+-- OpenAL-soft is an LGPL-2.0 software, which is supposed to be better
+-- as dynamically linked library. However, OpenAL-soft is also a C++
+-- library. It suffers from the libstdc++.so and libgcc_s.so
+-- version mismatching problem. It's possible that our built binaries
+-- are broken when moving to another Linux distro
+--
+-- As hashlink is indeed an MIT software, the legal risk should be fine.
+-- Thus, I just build it as statically linked library.
+--
 -- ===================================================================
 add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7",       { system = false })
@@ -30,7 +59,6 @@ if is_plat("linux") then
     add_requires("libsdl 2.28.5",      { system = false })
     add_requires("libglvnd 1.3.4",     { system = false })
     add_requires("alsa-lib 1.2.10",    { system = false })
-    -- libsndio.config.shared is read-only, always true.
     add_requires("libsndio 1.9.0",     { system = false })
     add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = false } })
 elseif is_plat("macosx") then
