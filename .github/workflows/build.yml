@@ -90,6 +90,9 @@ jobs:
               ./configure --prefix=../xmake-build
               make
               make install
+              ls -l ../
+              ls -l ../xmake-build
+              ls -l ../xmake-build/bin
               popd
               echo ================================================
               echo Clone Hashlink source code
