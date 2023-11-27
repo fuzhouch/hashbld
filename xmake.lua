@@ -213,7 +213,7 @@ target("hl")
               "hashlink/src/profile.c")
     add_deps("libhl")
     on_load(chain_actions(compile_flags, binary_link_flags))
-    after_install(copy_to_lib)
+    on_install(copy_to_lib)
 
 -----------------------------------------------------------------
 -- Below are Hashlink's built-in modules. Note that they also needs
