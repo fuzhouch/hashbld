@@ -1,3 +1,6 @@
+[Github CI](https://github.com/fuzhouch/hashbld/actions/workflows/build.yml/badge.svg)
+
+
 ## What is HashBLD?
 
 HashBLD provides a set of build scripts to build Hashlink targeting

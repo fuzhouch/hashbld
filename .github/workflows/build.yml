@@ -4,21 +4,25 @@ on:
   push:
     branches: [ main ]
 
-# Linux
-# We use Steam Runtime image to build hashlink from source code.
-# The job uses addnab/docker-run-action@v3 instead of jobs.build.container
-# introduced in official doc, because the code checkout step
-# actions/checkout@v3 uses a newer GLIBC_2.16 and GLIB_2.17 version,
-# which is unavailable in Steam runtime.
+# Tips for Linux
 #
+# We build the system on Ubuntu (but not SteamRT). This is because
+# none of the compilers with SteamRT can correctly compile
+# libuv (builtin 4.8.8 - no stdatomic.h, clang 3.6/3.8 and gcc-9 stuck
+# at compilation.
+#
+# For a purpose of maximizing compatibility, we maintain our
+# dependencies as much as possible.
+#
+# Inc case we use updated SteamRT in the future, We can use 
+# addnab/docker-run-action@v3 job to run commnds in container.
 # REF: https://aschmelyun.com/blog/using-docker-run-inside-of-github-actions/
 #
-# NOTE 2: We can't default xmake ppa because Steam Runtime defines its
-# own /etc/lsb-release to SteamRT. We have to build it from source.
-#
-# TODO: Shall we use clang 3.8 (integrated) to build Steam version?
+# NOTE for xmake: We can't default xmake ppa because Steam Runtime
+# defines its own /etc/lsb-release to SteamRT. We have to build it
+# from source.
 jobs:
-  build:
+  build_linux_x86_64_general:
     runs-on: ubuntu-latest
     steps:
       - name: checkout build scripts
@@ -26,31 +30,38 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
-      - name: Build in Steam Runtime image (x86_64)
-        uses: addnab/docker-run-action@v3
-        with:
-          image: registry.gitlab.steamos.cloud/steamrt/scout/sdk
-          options: --cpus 1 -v ${{github.workspace}}:/hashbld
-          run: |
-              apt update
-              apt -y install unzip
-              cd /hashbld
+      - name: Install xmake tool
+        run: |
+              mkdir ./xmake-build/
               git clone https://github.com/xmake-io/xmake
-              cd /hashbld/xmake
+              cd ./xmake
               git submodule update --init --recursive .
-              ./configure --prefix=/hashbld/xmake/buildroot
+              ./configure --prefix=../xmake-build
               make
               make install
-              cd /hashbld
+      - name: Checkout hashlink code base
+        run: |
               bash clone-code.sh
-              /hashbld/xmake/buildroot/bin/xmake config --root -a x86_64
-              /hashbld/xmake/buildroot/bin/xmake config --sdk=/usr/lib/llvm-3.8/lib/clang --toolchain=clang
-              export steamrt=yes
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes hl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes fmt
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes openal
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sdl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes sqlite
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes ssl
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes uv
-              /hashbld/xmake/buildroot/bin/xmake build --root --verbose --yes ui
+      - name: Fake glu.h
+        run: |
+              mkdir -p hashlink/ci_fix/GL
+              cp ci_fix/glu.h hashlink/ci_fix/GL/glu.h
+      - name: Build Linux (x86_64)
+        run: |
+              ./xmake-build/bin/xmake global --yes --theme=plain
+              ./xmake-build/bin/xmake config --yes -a x86_64 -p linux
+              ./xmake-build/bin/xmake build --yes libhl
+              ./xmake-build/bin/xmake build --yes hl
+              ./xmake-build/bin/xmake build --yes fmt
+              ./xmake-build/bin/xmake build --yes sqlite
+              ./xmake-build/bin/xmake build --yes ssl
+              ./xmake-build/bin/xmake build --yes ui
+              ./xmake-build/bin/xmake build --yes sdl
+              ./xmake-build/bin/xmake build --yes openal
+              ./xmake-build/bin/xmake build --yes uv
+      - name: Create package (x86_64)
+        run: |
+              ./xmake-build/bin/xmake install -o ./package --all
+              rm -rf ./package/bin ./package/include
+              mv ./package/lib/* ./package/
+              mv ./package/libopenal.* ./package/lib/

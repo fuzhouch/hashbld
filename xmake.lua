@@ -1,83 +1,105 @@
 -- This xmake.lua build file is designed as a replacement of
 -- Makefile or CMakeLists.txt of standard hashlink releases.
---
--- The idea is to maximize the flexibility provided by xmake, that
--- 
--- a) In most desktop platforms, we use xmake, minimize per-compiler
---    settings
--- b) In Steam build Docker image, we use xmake generated Makefile.
 
--- Dependencies of core
--- add_requires("pcre 8.45", { system = false, configs = { bitwidth = 16 }})
+
+-- ===================================================================
+-- Common dependendies
+--
+-- These dependencies are downloaded and built with hashlink. We don't
+-- use any OS provided packages.
+--
+-- We apply different strategies on different Operating systems:
+--
+-- On Linux, we maintain all dependencies ourselves, as static
+-- libraries. This is to make sure we eliminate any possible version
+-- mismatching issue in libstdc++.so and libgcc_s.so. The only
+-- exceptions are listed below:
+--
+-- 1. libsndio: No option to build as static library.
+-- 2. libopenal: Though libopenal supports a static link option,
+--    hashlink uses in a dynamic way: See definition of
+--    openal.c!al_load_extensions(): all functions are loaded via
+--    alGetProcAddress(). Thus a static build library causes link error.
+-- 2. OpenGL - The "true" OpenGL. We depend on libglvnd to dispatch real
+--    calls, and libglvnd depends on true libraries on OS.
+--
+-- [TBD] On macOS, we use minimal set of system Frameworks.
+--
+-- [TBD] On Windows, we maintain all dependencies ourselves, as static
+-- libraries. This is because many dependencies are not installed by
+-- default on Windows.
+--
+--
+-- Details of OpenAL-soft issue
+--
+-- OpenAL-soft is also a C++ library. It suffers from the libstdc++.so
+-- and libgcc_s.so version mismatching problem. Although we can maintain
+-- our own openal-soft dynamically loaded library, it rely on the
+-- libstdc++.so library on build machine. It can break our built binaries
+-- when moving to another Linux distro.
+--
+-- As there's no reliable way to build a static library without
+-- modifying hashlink code design. I have to leave this dependency to
+-- Operating System.
+--
+-- As hashlink is indeed an MIT software, the legal risk should be fine.
+-- Thus, I just build it as statically linked library.
+--
+-- ===================================================================
 add_requires("mikktspace 2020.03.26", { system = false })
-add_requires("libvorbis 1.3.7", { system = false })
-add_requires("libpng v1.6.40", { system = false })
-add_requires("minimp3 2021.05.29", { system = false })
-add_requires("zlib v1.3", { system = false })
-add_requires("sqlite3 3.43.0+200", { system = false })
-add_requires("mbedtls 2.28.3", { system = false })
-add_requires("libsndio 1.9.0", { system = false })
-add_requires("libjpeg-turbo 2.1.4", { system = false })
-add_requires("libsdl 2.28.5", { system = false })
-add_requires("libogg v1.3.4", { system = false })
-add_requires("alsa-lib 1.2.10", { system = false })
-add_requires("python 3.11.3", { system = false })
+add_requires("libvorbis 1.3.7",       { system = false })
+add_requires("libpng v1.6.40",        { system = false })
+add_requires("minimp3 2021.05.29",    { system = false })
+add_requires("sqlite3 3.43.0+200",    { system = false })
+add_requires("mbedtls 2.28.3",        { system = false })
+add_requires("libjpeg-turbo 2.1.4",   { system = false })
+add_requires("libuv v1.46.0",         { system = false })
+add_requires("libogg v1.3.4",         { system = false, configs = { shared = false }})
+add_requires("zlib v1.3",             { system = false, configs = { shared = false }})
 
-function is_steamrt()
-    local value = os.getenv("steamrt")
-    if value == nil then
-        return false
-    end
-    return true
-end
-
--- The following dependencies are required as platform must-have.
--- The criteria is based on Steam runtime but still keep a subset.
+-- ===================================================================
+-- OS-specific dependencies
+--
+-- The following dependencies are expected to be provided by Opearting
+-- systems, as they directly rely on infrastructure provided by
+-- Operating System. 
+-- ===================================================================
 if is_plat("linux") then
-    add_requires("glib 2.78.1", { system = false })
-    add_requires("openal", { system = true })
-    add_requires("openssl", { system = true })
-    if is_steamrt() then
-        add_requires("apt::libgl1-mesa-dev", { system = true })
-        add_requires("apt::libxcb1-dev", { system = true })
-        add_requires("apt::libx11-dev", { system = true })
-    else
-        add_requires("libui 2022.12.3", { system = false, configs = {shared = false} })
-        add_requires("libuv v1.46.0", { system = false })
-        add_requires("libglvnd", { system = true })
-        add_requires("libxcb", { system = true })
-        add_requires("libx11", { system = true })
-    end
+    add_requires("libsdl 2.28.5",      { system = false })
+    add_requires("libglvnd 1.3.4",     { system = false })
+    add_requires("alsa-lib 1.2.10",    { system = false })
+    add_requires("libsndio 1.9.0",     { system = false })
+
+    -- We cannot ensure openal is installed in CI machine
+    -- Thus we have to build it with our own package.
+    -- When packaging the builds, we separate libopenal.so.* to
+    -- different folders. This .so file is only used when system
+    -- default libopenal.so does not work.
+    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+elseif is_plat("macosx") then
+    add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
 
--- 
--- TODO
 --
--- I have to apply an external fix to build libsdl in Manjaro system,
--- that I need to create an /usr/include/X11/X11 symbolic link
--- pointing to /usr/include/X11. That means, we must allow access to
--- X11 headers in a path like /usr/include/X11/X11/Xext.h.
+-- NOTE for Arch/Manjaro
 --
--- This is caused by libsdl/cmake/sdlchecks.cmake, that it searches system
--- folders to find X11 header files. However it does not include
--- /usr/include. For an unknown reason, it works for manual cmake
--- configuration but does not work when xmake builds libsdl from source
--- code as a dependency. A possile theory is xmake applies a more strict
--- search path limitation, which does not allow searching /usr/include.
+-- To build the project in Arch/Manjaro system, please add a
+-- self-pointing symbolic link fir path /usr/include/X11:
 --
--- If my theory is true, then it may not make sense to ask xmake fix it,
--- because X11 code are intended to be considered as an OS-level infra,
--- which I should never touch it myself.
+-- ln -s /usr/include/X11 /usr/include/X11/X11.
 --
--- Will check with xmake team for further diagnose.
+-- This is to fix a bug in SDL2's cmake/sdlcheck.cmake. It hardcodes a
+-- set of search path to find Xext.h. However it does not hardcodes
+-- /usr/include, which is where Arch/Manjaro saves Xext.h.
+--
+-- NOTE for macos
+-- Appears we need to make sure system installs glibtoolize binary via
+-- ``brew install libtool``, in order to build libuv under macOS.
+--
 
------------------------------------------------------------------
--- Utility functions
------------------------------------------------------------------
-
-function rename_hdll (target)
-    target:set("filename", target:basename() .. ".hdll")
-end
+-- ===================================================================
+-- Utility functions to define compile options.
+-- ===================================================================
 
 function binary_link_flags(target)
     if target:is_plat("linux") then
@@ -87,6 +109,8 @@ function binary_link_flags(target)
         target:add("ldflags", "-static-libstdc++")
         target:add("ldflags", "-Wl,--export-dynamic")
         target:add("ldflags", "-Wl,--no-undefined")
+    elseif target:is_plat("macosx") then
+        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
 end
 
@@ -98,7 +122,8 @@ function dynlib_link_flags(target)
         target:add("shflags", "-static-libstdc++")
         target:add("shflags", "-Wl,--export-dynamic")
         target:add("shflags", "-Wl,--no-undefined")
-
+    elseif target:is_plat("macosx") then
+        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
 end
 
@@ -118,13 +143,13 @@ function compile_flags(target)
         target:add("cxflags", "-fno-omit-frame-pointer")
         target:add("cxflags", "-ftls-model=global-dynamic")
         target:add("cxflags", "-pthread")
+    elseif target:is_plat("macosx") then
+        target:add("cxflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
     end
-    -- for macOS
-    -- target:add("defines", "GL_SILENCE_DEPRECATION")
-    -- target:add("defines", "openal_soft")
 end
 
-function bind_flags(...)
+-- This function is used to combine multiple actions on same xmake hook.
+function chain_actions(...)
     local args = { ... }
     return function(target)
         for i, fun in ipairs(args) do
@@ -133,13 +158,13 @@ function bind_flags(...)
     end
 end
 
------------------------------------------------------------------
--- Hashlink standard library
------------------------------------------------------------------
+-- ===================================================================
+-- Project build settings
+-- ===================================================================
 target("libhl")
     set_kind("shared")
     set_basename("hl")
-    add_includedirs("hashlink/src")
+    add_includedirs("hashlink/src", "hashlink/include/pcre")
     add_files("hashlink/src/std/array.c",
               "hashlink/src/std/buffer.c",
               "hashlink/src/std/bytes.c",
@@ -181,12 +206,16 @@ target("libhl")
               "hashlink/include/pcre/pcre16_valid_utf16.c",
               "hashlink/include/pcre/pcre_ucd.c")
     add_files("hashlink/src/gc.c")
-    -- add_packages("pcre")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
 -- Main executable
 -----------------------------------------------------------------
+function copy_to_lib(target)
+    local install_to = path.join(target:installdir(), "lib", target:filename())
+    os.cp(target:targetfile(), install_to)
+end
+
 target("hl")
     set_kind("binary")
     add_includedirs("hashlink/src")
@@ -198,86 +227,87 @@ target("hl")
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, binary_link_flags))
+    on_load(chain_actions(compile_flags, binary_link_flags))
+    on_install(copy_to_lib)
 
 -----------------------------------------------------------------
--- Below are libraries built with hashlink. Note that they also needs
+-- Below are Hashlink's built-in modules. Note that they also needs
 -- haxelib install commands to get Haxe interface, in order to access
 -- them.
 -----------------------------------------------------------------
 target("fmt")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/fmt/*.c")
     add_deps("libhl")
     add_packages("mikktspace",
-                 "zlib",
-                 "minimp3", "libvorbis", "libogg",
+                 "xmake::zlib",
+                 "minimp3", "libvorbis", "xmake::libogg",
                  "libpng", "libjpeg-turbo")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("ui")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ui/ui_stub.c")
     add_deps("libhl")
-    add_packages("libui", "glib")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("uv")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/uv/*.c")
     add_packages("libuv")
     add_deps("hl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("sqlite")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/sqlite/*.c")
     add_packages("sqlite3")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("ssl")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/ssl/*.c")
     add_packages("mbedtls")
     add_deps("libhl")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("openal")
     set_kind("shared")
+    set_prefixname("")
+    set_extension(".hdll")
     add_includedirs("hashlink/src")
+
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    add_packages("xmake::alsa-lib", "xmake::libsndio", "openal")
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    add_packages("openal", "alsa-lib", "libsndio")
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("sdl")
     set_kind("shared")
-    add_includedirs("hashlink/src")
+    set_prefixname("")
+    set_extension(".hdll")
+    -- Ci_fix folder contains only replaceable headers making hashlink
+    -- happy.
+    add_includedirs("hashlink/src", "hashlink/ci_fix")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "python", "openssl")
-    if is_plat("linux") then
-        if is_steamrt() then
-            add_packages("libgl1-mesa-dev", "libxcb1-dev", "libx11-dev")
-        else
-            add_packages("libglvnd", "libxcb", "libx11")
-        end
-    end
-    on_load(bind_flags(compile_flags, dynlib_link_flags))
-    before_link(rename_hdll)
+    add_packages("libsdl", "libglvnd")
+    on_load(chain_actions(compile_flags, dynlib_link_flags))
 
-    -- Missing DLL
-    -- libGLESv2 libGLX libOpenGL libxcb-dbe libxcb-xinput
