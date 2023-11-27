@@ -3,3 +3,5 @@ hashlink
 build/
 .xmake/
 *.hl
+compile_commands.json
+.cache/

@@ -39,6 +39,10 @@ jobs:
               ./configure --prefix=../xmake-build
               make
               make install
+      - name: Fake glu.h
+        run: |
+              mkdir -p hashlink/include/GL
+              cp fakegl/GL/glu.h hashlink/include/GL/glu.h
       - name: Build Linux (x86_64)
         run: |
               bash clone-code.sh

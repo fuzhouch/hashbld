@@ -14,7 +14,11 @@
 -- mismatching issue in libstdc++.so and libgcc_s.so. The only
 -- exceptions are listed below:
 --
--- 1. libsndio - No option to build as static library.
+-- 1. libsndio: No option to build as static library.
+-- 2. libopenal: Though libopenal supports a static link option,
+--    hashlink uses in a dynamic way: See definition of
+--    openal.c!al_load_extensions(): all functions are loaded via
+--    alGetProcAddress(). Thus a static build library causes link error.
 -- 2. OpenGL - The "true" OpenGL. We depend on libglvnd to dispatch real
 --    calls, and libglvnd depends on true libraries on OS.
 --
@@ -25,13 +29,17 @@
 -- default on Windows.
 --
 --
--- Potential issues
+-- Details of OpenAL-soft issue
 --
--- OpenAL-soft is an LGPL-2.0 software, which is supposed to be better
--- as dynamically linked library. However, OpenAL-soft is also a C++
--- library. It suffers from the libstdc++.so and libgcc_s.so
--- version mismatching problem. It's possible that our built binaries
--- are broken when moving to another Linux distro
+-- OpenAL-soft is also a C++ library. It suffers from the libstdc++.so
+-- and libgcc_s.so version mismatching problem. Although we can maintain
+-- our own openal-soft dynamically loaded library, it rely on the
+-- libstdc++.so library on build machine. It can break our built binaries
+-- when moving to another Linux distro.
+--
+-- As there's no reliable way to build a static library without
+-- modifying hashlink code design. I have to leave this dependency to
+-- Operating System.
 --
 -- As hashlink is indeed an MIT software, the legal risk should be fine.
 -- Thus, I just build it as statically linked library.
@@ -60,7 +68,8 @@ if is_plat("linux") then
     add_requires("libglvnd 1.3.4",     { system = false })
     add_requires("alsa-lib 1.2.10",    { system = false })
     add_requires("libsndio 1.9.0",     { system = false })
-    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = false } })
+
+    add_requires("openal",             { system = true  })
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
 end
@@ -116,7 +125,6 @@ function compile_flags(target)
     if target:is_plat("linux") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
-        target:add("cflags", "-Isteamrt/include")
         target:add("defines", "LIBHL_EXPORTS")
 
         -- Build location independent settings
@@ -278,9 +286,9 @@ target("openal")
     set_prefixname("")
     set_extension(".hdll")
     add_includedirs("hashlink/src")
-    add_defines("AL_LIBTYPE_STATIC=1")
+    add_includedirs("hashlink/fakegl")
 
-    -- add_files("hashlink/libs/openal/openal.c")
+    add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
     add_packages("openal", "alsa-lib", "libsndio")
     on_load(chain_actions(compile_flags, dynlib_link_flags))
