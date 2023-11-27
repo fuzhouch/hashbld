@@ -39,13 +39,15 @@ jobs:
               ./configure --prefix=../xmake-build
               make
               make install
+      - name: Checkout hashlink code base
+        run: |
+              bash clone-code.sh
       - name: Fake glu.h
         run: |
               mkdir -p hashlink/include/GL
               cp fakegl/GL/glu.h hashlink/include/GL/glu.h
       - name: Build Linux (x86_64)
         run: |
-              bash clone-code.sh
               ./xmake-build/bin/xmake global --yes --theme=plain
               ./xmake-build/bin/xmake config --yes --verbose -a x86_64 -p linux
               ./xmake-build/bin/xmake build --yes --verbose libhl
