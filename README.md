@@ -105,7 +105,7 @@ Android ARM is removed because Hashlink does not support running on ARM
 platform due to a lack of JIT. The correct approach is to build Haxe
 code to C, then compile it via cross-compliation toolset.
 
-### Q: Why maintain my build scripts while Hashlink already maintains its Makefile?
+### Q: Why do I maintain new build scripts while Hashlink already maintains its Makefile?
 
 [Hashlink codebase](https://github.com/HaxeFoundation/hashlink)
 maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it does
