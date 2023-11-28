@@ -187,7 +187,13 @@ end
 -- ===================================================================
 target("libhl")
     set_kind("shared")
-    set_basename("hl")
+    if is_plat("windows") then
+        -- Avoid naming conflict when building hl.lib: Both hl.exe and
+        -- hl.dll will have same export library name.
+        set_basename("libhl") 
+    else
+        set_basename("hl")
+    end
     add_includedirs("hashlink/src", "hashlink/include/pcre")
     add_files("hashlink/src/std/array.c",
               "hashlink/src/std/buffer.c",
