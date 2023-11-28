@@ -250,7 +250,7 @@ target("libhl")
 -----------------------------------------------------------------
 function copy_to_lib(target)
     local install_to = path.join(target:installdir(), "lib", target:filename())
-    print("[customized] copy " .. target:filename() .. " to " .. install_to)
+    print("[after install] copy " .. target:filename() .. " to " .. install_to)
     os.cp(target:targetfile(), install_to)
 end
 
@@ -268,7 +268,7 @@ target("hl")
         add_links("user32")
     end
     on_load(chain_actions(compile_flags, binary_link_flags))
-    on_install(copy_to_lib)
+    after_install(copy_to_lib)
 
 -----------------------------------------------------------------
 -- Below are Hashlink's built-in modules. Note that they also needs
