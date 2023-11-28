@@ -79,8 +79,6 @@ if is_plat("linux") then
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL")
 elseif is_plat("windows") then
-    add_requires("winmm",        { system = true })
-    add_requires("opengl32",     { system = true })
 end
 
 --
