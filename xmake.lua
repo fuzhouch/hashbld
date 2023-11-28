@@ -318,7 +318,10 @@ target("sdl")
     set_extension(".hdll")
     -- Ci_fix folder contains only replaceable headers making hashlink
     -- happy.
-    add_includedirs("hashlink/src", "hashlink/ci_fix")
+    add_includedirs("hashlink/src")
+    if os.isdir("hashlink/ci_fix") then
+        add_includedirs("hashlink/ci_fix")
+    end
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
