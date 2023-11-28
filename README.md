@@ -1,21 +1,88 @@
 ![Github CI](https://github.com/fuzhouch/hashbld/actions/workflows/build.yml/badge.svg)
 
 
-## What is HashBLD?
+## Introduction
 
-HashBLD provides a set of build scripts to build Hashlink targeting
-gaming platforms. The goal is to provide a out-of-box usable
-[Hashlink](https://hashlink.haxe.org/) with minimal dependencies. It
-should be executable on a clean target platform without development
-tools or SDK installed, eliminating unexpected link error or unsatisfied
-DLL issue.
+[HashBLD](https://github.com/fuzhouch/hashbld) is a project to build
+[Hashlink](https://hashlink.haxe.org) and setup a proper development
+environment. This project provides the following artifacts:
 
-This project verified a successful build, by using self-built hashlink
-VM to launch the official
+* Verified build scripts to build HashBLD on all platforms. Verified by
+  the official [Hello Hashlink](https://heaps.io/documentation/hello-hashlink.html)
+  example.
+* Dependencies with nown versions (avoid using checked-in source code
+  in Hashlink codebase)
+* Portable build. Ensure build can be copied and used to different
+  machines, with minimal dynamic linked libraries requirements from
+  players Operating System.
+
+## Quick start
+
+### Build Hashlink
+
+HashBLD uses [xmake](https://xmake.io) as build tool. Please refers to
+[Xmake's Official Guide](https://xmake.io/#/guide/installation) to
+install it to system.
+
+>
+> For Archlinux or Manjaro, it can be installed via ``pacman -S xmake``.
+>
+
+After installing ``xmake``, follow the steps below:
+
+1. Checkout build scripts: ``git checkout https://github.com/fuzhouch/hashbld``.
+2. Go to local folder of repository ``./hashbld``.
+3. Checkout Hashlink code base and set branches: ``bash ./clone-code.sh``.
+4. Build project: ``xmake build --rebuild --all``.
+5. Create runnable package: ``xmake install --installdir=./package --all``.
+
+After building, go to ``./package/lib``. All built binaries, including
+virtual machine ``hl``, core libraries ``libhl.so`` (or ``libhl.dynlib``
+for macOS), and 7 modules (``fmt.hdll``, ``openal.hdll``, ``sdl.hdll``,
+``sqlite.hdll``, ``ssl.hdll``, ``ui.hdll``, ``uv.hdll``), are saved
+under same folder. It can be packaged and copied to other machines for
+use.
+
+Note that ``clone-code.sh`` builds Hashlink in version 1.3. The master
+branch is introducing a breaking change by the time Nov 28, 2023, which
+does not work with released haxelib libraries. See section "Q & A" for
+details.
+
+I'm working on a solution to allow we use master branch. Will update.
+
+### Run hello-world
+
+This project has a
 [Hello Hashlink](https://heaps.io/documentation/hello-hashlink.html)
-example successfully.
+example copied from
+[official Heaps documentation](https://heaps.io/documentation/hello-hashlink.html).
+To use it, we should compile it to bytecode first, then run it with
+``hl`` virtual machine.
 
-The first set of target platforms include:
+Please use the steps below to run:
+
+1. Download and install [Haxe compiler](https://haxe.org/).
+2. Install Haxe libraries: ``haxelib install heaps format hashlink, hlopenal, hlsdl``.
+3. Compile bytecode: ``cd hashbld/hello-world && haxe compile.hxml``
+4. Run program: ``./packages/lib/hl ./hello-world/hello.hl``.
+
+A black window with a string "Hello Hashlink!" message should show on
+desktop.
+
+Note that we may see a lot of warnings from command when compiling
+bytecode, this is because the released haxelib library version is 
+behind the development of Haxe compiler. It can be annoying because the
+warnings can hide the true errors. The section "Q & A" for details.
+
+I'm working on a solution. Will update.
+
+
+## Q & A
+
+### How many platforms does HashBLD support?
+
+My plan is to support the platforms below. It's a list that still on
+progress.
 
 - [X] Linux desktop
 - [X] ~~Steam runtime (Linux, via Docker image)~~
@@ -26,85 +93,66 @@ The first set of target platforms include:
 - [ ] iOS (including codesign and notarization)
 - [X] ~~Android ARM~~
 
-More platforms may be added when I expand my gaming plan to more
-platforms.
 
-### Build on Linux desktop
+Note that Steam runtime is removed from support list because it comes
+with very old compiler toolchains (GCC 4.8.4, Clang 3.6/3.8), which does
+not compile some dependencies like ``libuv``. Good news is, we can build
+the full project in a Linux box and copy the binaries to Steam for use,
+as the dependencies are under control when building with Hashlink.
 
-To build on Linux desktop, please follow the two steps:
+Android ARM is removed because Hashlink does not support running on ARM
+platform due to a lack of JIT. The correct approach is to build Haxe
+code to C, then compile it via cross-compliation toolset.
 
-1. Run script ``clone-code.sh``. It checkout hashlink source code from
-   https://github.com/HaxeFoundation/hashlink to local. Then, it
-   switches to tag 1.13.
-2. Run command ``xmake build -y --all``. It automatically download all
-   dependencies from Internet, and build executable (``hl``), standard
-   library (``libhl.so``), and all extension libraries (``*.hdll``). All
-   binaries can be found under ``build/linux/x86_64/release`` folder.
+### Q: Why maintain my build scripts while Hashlink already maintains its Makefile?
 
-## Build a Hashlink executable with minimal dependencies
+[Hashlink codebase](https://github.com/HaxeFoundation/hashlink)
+maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it does
+not work in two scenarios when I start using it.
 
-The biggest difference between the binaries built from ``xmake.lua``
-with official build files, is that our Xmake build makes all
-dependencies statically linked to Hashlink, as much as possible.
-This step allows we build a hashlink with minimal system dependencies.
-The list of dependencies that are statically linked are listed below.
-In ``xmake.lua`` we can see all of them have configuration set to
-``system = false``.
+The first issue is, the official ``Makefile`` and ``CMakeLists.txt``
+does not guaranteed to be built on all Operating Systems. For example,
+Hashlink 1.3 depends on Operating System to provide ``mbedtls`` to build
+``ssl.hdll`` module. It uses an old, ``2.x`` version, while systems like
+Archlinux/Manjaro has been upgraded system to use an incompatible
+``mbedtls 3.x`` which causes build breaks. To build it, developers
+have to manually modify ``Makefile`` to point to correct ``mbedtls 2.x``
+path, based on Operating System settings. It's difficult to maintain,
+and hard to automate the build process.
 
-- mikktspace 2020.03.26
-- libvorbis 1.3.7
-- libpng v1.6.40
-- libjpeg-turbo 2.1.4
-- minimp3 2021.05.29
-- zlib v1.3
-- libui 2022.12.3
-- libuv v1.46.0
-- openal-soft 1.23.1
-- mbedtls 2.28.3
-- sqlite3 3.43.0+200
+The second issue is a dynamic linkage management. The official
+``Makefile`` and ``CMakeLists.txt`` searches dependencies with whatever
+versions provided by Operating System, mostly dynamically linked
+libraries. When copying the executable binaries from build machine to
+client machines, it's not guaranteed to run because client machines may
+use different version of libraries, or just haven't installed some of
+them. It can impact from functionality libraries like ``libsdl``, to
+fundamental libraries like ``libc`` and ``libstdc++``.
+To fix the issue, I need to ensure most functionality
+code is linked statically. If some libraries must be linked dynamically
+(notably ``OpenAL`` and ``libsndio``), I want to exactly ensure their
+dependencies as well.
 
-There are four exceptions, though:
+The last issue, is the ability to upgrade dependencies.
+Hashlink includes some dependencies in their code base, which are very
+old version. To prevent software bugs, esp., security breaches, I need
+an ability to understand which version of dependencies I build with, and
+upgrade if necessary. This is especially true when a game needs to
+download data remotely and execute.
 
-- ``pcre``. Hashlink uses an very old ``pcre 8.42``, which is
-  unavailable in Xmake package repository. The latest available version,
-  ``pcre 8.45``, can compile but causes Hashlink VM crash with a strange
-  "OpenGL error" message printed. I don't want to fix it because I see
-  master version appears to be migrating to ``pcre2``. Let's wait a bit
-  for next version.
-- GNU C library, including ``libm``, ``libdl``, ``libstdc++``,
-  ``libgcc_s.so``, ``libc.so``, ``/lib64/ld-linux-x86-64.so``,
-  and ``linux-vdso.so``. These libraries must be provided by OS. Our
-  Xmake build does not even provide linking options for most of them,
-  except ``-lm``, ``-ldl``, ``-lstdc++``.
-- ``OpenGL`` libraries are explicitly marked as ``-lGL`` option when
-  building ``sdl.hdll``. This is for a similar reason just like GNU C
-  library, that I suppose ``OpenGL`` should be provided by OS.
-- X11 libraries, which is implicitly referenced when building SDL2, is
-  also considered provided by OS. We don't have ability to handle
-  building.
 
-The cost of this design decision is, our customized builds are
-around 10x larger in size, comparing with binaries built by official
-Makefile or CMakeLists.txt. For example, the ``sdl.hdll`` library built
-by xmake is around 2.8MiB, while the binary built by Makefile is
-around 113KiB because it references libSDL2.so in system.
+### Known issues and solution
 
-## Known issues and solution
+- Avoid cross-compile via HashBLD. Hashlink depends on some libraries,
+  mostly ``libuv``, which requires functionalities from high version of
+  GCCs. Some systems with old compilers may not support building it.
 
-- Don't use toolchain to define build options (cflags and ldflags).
-  Toolchain can contain predefined cflags and ldflags. However, they
-  will be applied to dependency building process as well. Some Hashlink
-  dependencies, for example, ``libuv``, requires non-standard GNU
-  extension such as ``pthread_rwlock_t``. They must follow different
-  ``-std=`` build options. A best practice is always use default
-  environment toolchain, except we are doing cross-compiling.
-
-- Hashlink splits its code to Haxe code (to provide Haxe interfaces) and
-  C code (build VM, standard libraries and extensions). Though Hashlink
-  official documentation recommends we install Haxe code
-  [targeting Github](https://haxe.org/manual/target-hl-getting-started.html),
-  I don't think it a reliable approach because it's very easy to
-  download C and Haxe code from different commits.
+- Hashlink prefers build
+  [targeting Github versions](https://haxe.org/manual/target-hl-getting-started.html),
+  to install libraries. Though it does not sound like a good solution
+  from engineering point of view, the official haxelibs have bigger issue.
+  It still uses a lot of old syntax, causing many build warnings.
+  Haven't dig out a repeatable solution yet.
 
 - By 2023-11, Hashlink master branch is preparing a breaking change from
   current 1.13 to master branch (1.14). If we build Hashlink from master
