@@ -108,8 +108,8 @@ code to C, then compile it via cross-compliation toolset.
 ### Q: Why do I maintain new build scripts while Hashlink already maintains its Makefile?
 
 [Hashlink codebase](https://github.com/HaxeFoundation/hashlink)
-maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it does
-not work in two scenarios when I start using it.
+maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it comes
+with 3 issues when I try to build a game with Heaps.io.
 
 The first issue is, the official ``Makefile`` and ``CMakeLists.txt``
 does not guaranteed to be built on all Operating Systems. For example,
