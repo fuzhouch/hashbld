@@ -325,10 +325,12 @@ target("ssl")
     set_extension(".hdll")
     add_rules("utils.symbols.export_all")
     add_includedirs("hashlink/src")
-    add_files("hashlink/libs/ssl/*.c")
+    add_files("hashlink/libs/ssl/ssl.c")
     add_packages("mbedtls")
     add_deps("libhl")
     if is_plat("windows") then
+        -- For platform-specific threading_alt.h
+        add_includedirs("ci_fix/mbedtls2/")
         add_links("crypt32")
     end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
