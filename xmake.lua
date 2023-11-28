@@ -113,9 +113,6 @@ function binary_link_flags(target)
             target:add("ldflags", "-static-libstdc++")
         end
     end
-    if target:is_plat("windows") then
-        target:add("links", "user32")
-    end
 end
 
 function dynlib_link_flags(target)
@@ -131,10 +128,6 @@ function dynlib_link_flags(target)
         if target:is_plat("macosx") then
             target:add("shflags", "-Wl,-export_dynamic")
         end
-    end
-    if target:is_plat("windows") then
-        target:add("links", "user32")
-        target:add("links", "ws2_32")
     end
 end
 
@@ -163,6 +156,7 @@ function compile_flags(target)
     if target:is_plat("windows") then
         target:add("defines", "UNICODE")
         target:add("defines", "_UNICODE")
+        target:add("defines", "USRDLL")
         -- for glext.h
         target:add("cflags", "-Ihashlink/include/gl")
     end
@@ -245,6 +239,9 @@ target("libhl")
                   "hashlink/include/mdbg/mach_excServer.c",
                   "hashlink/include/mdbg/mach_excUser.c")
     end
+    if is_plat("windows") then
+        add_links("user32", "ws2_32")
+    end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
@@ -265,6 +262,9 @@ target("hl")
               "hashlink/src/debugger.c",
               "hashlink/src/profile.c")
     add_deps("libhl")
+    if is_plat("windows") then
+        add_links("user32")
+    end
     on_load(chain_actions(compile_flags, binary_link_flags))
     on_install(copy_to_lib)
 
@@ -357,6 +357,9 @@ target("sdl")
     add_packages("libsdl")
     if is_plat("linux") then
         add_packages("libglvnd")
+    end
+    if is_plat("windows") then
+        add_links("opengl32", "winmm")
     end
     on_load(chain_actions(copy_ci_fix, compile_flags, dynlib_link_flags))
 
