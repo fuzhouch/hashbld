@@ -95,7 +95,7 @@ progress.
 - [X] ~~Android ARM~~
 
 
-Note that Steam runtime is removed from support list because it comes
+Steam runtime is removed from support list because it comes
 with very old compiler toolchains (GCC 4.8.4, Clang 3.6/3.8), which does
 not compile some dependencies like ``libuv``. Good news is, we can build
 the full project in a Linux box and copy the binaries to Steam for use,
