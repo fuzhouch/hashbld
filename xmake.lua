@@ -106,6 +106,7 @@ function binary_link_flags(target)
     if target:is_plat("linux") or target:is_plat("macosx") then
         target:add("ldflags", "-lm")
         if target:is_plat("linux") then
+            target:add(ldflags, "-ldl")
             target:add("rpathdirs", "$ORIGIN")
             target:add("ldflags", "-Wl,--no-undefined")
             target:add("ldflags", "-static-libgcc")
@@ -248,7 +249,6 @@ end
 target("hl")
     set_kind("binary")
     add_includedirs("hashlink/src")
-    add_ldflags("-ldl")
     add_files("hashlink/src/code.c",
               "hashlink/src/jit.c",
               "hashlink/src/main.c",
