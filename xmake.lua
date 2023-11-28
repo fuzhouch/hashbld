@@ -154,6 +154,7 @@ function compile_flags(target)
         end
     end
     if target:is_plat("windows") then
+        target:add("defines", "_WINDOWS")
         target:add("defines", "UNICODE")
         target:add("defines", "_UNICODE")
         target:add("defines", "_USRDLL")
@@ -375,6 +376,7 @@ target("sdl")
         add_packages("libglvnd")
     end
     if is_plat("windows") then
+        add_defines("SDL_EXPORTS")
         add_links("opengl32", "winmm")
     end
     on_load(chain_actions(copy_ci_fix, compile_flags, dynlib_link_flags))
