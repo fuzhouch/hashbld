@@ -1,4 +1,4 @@
-[Github CI](https://github.com/fuzhouch/hashbld/actions/workflows/build.yml/badge.svg)
+![Github CI](https://github.com/fuzhouch/hashbld/actions/workflows/build.yml/badge.svg)
 
 
 ## What is HashBLD?
@@ -18,11 +18,13 @@ example successfully.
 The first set of target platforms include:
 
 - [X] Linux desktop
-- [ ] Steam runtime (Linux, via Docker image)
+- [X] ~~Steam runtime (Linux, via Docker image)~~
 - [ ] Windows desktop
-- [ ] macOS desktop (including codesign and notarization)
+- [X] macOS desktop
+  - [ ] Code sign
+  - [ ] Notarization
 - [ ] iOS (including codesign and notarization)
-- [ ] Android ARM
+- [X] ~~Android ARM~~
 
 More platforms may be added when I expand my gaming plan to more
 platforms.

@@ -56,6 +56,8 @@ add_requires("libjpeg-turbo 2.1.4",   { system = false })
 add_requires("libuv v1.46.0",         { system = false })
 add_requires("libogg v1.3.4",         { system = false, configs = { shared = false }})
 add_requires("zlib v1.3",             { system = false, configs = { shared = false }})
+add_requires("libsdl 2.28.5",         { system = false })
+add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, configs = { shared = true } })
 
 -- ===================================================================
 -- OS-specific dependencies
@@ -65,19 +67,18 @@ add_requires("zlib v1.3",             { system = false, configs = { shared = fal
 -- Operating System. 
 -- ===================================================================
 if is_plat("linux") then
-    add_requires("libsdl 2.28.5",      { system = false })
     add_requires("libglvnd 1.3.4",     { system = false })
     add_requires("alsa-lib 1.2.10",    { system = false })
     add_requires("libsndio 1.9.0",     { system = false })
-
+    -- Notes for OpenAL on Linux
     -- We cannot ensure openal is installed in CI machine
     -- Thus we have to build it with our own package.
     -- When packaging the builds, we separate libopenal.so.* to
     -- different folders. This .so file is only used when system
     -- default libopenal.so does not work.
-    add_requires("openal-soft 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+
 elseif is_plat("macosx") then
-    add_frameworks("CoreFoundation", "Security", "OpenGL", "OpenAL")
+    add_frameworks("CoreFoundation", "Security", "OpenGL")
 end
 
 --
@@ -102,36 +103,41 @@ end
 -- ===================================================================
 
 function binary_link_flags(target)
-    if target:is_plat("linux") then
-        target:add("rpathdirs", "$ORIGIN")
+    if target:is_plat("linux") or target:is_plat("macosx") then
         target:add("ldflags", "-lm")
-        target:add("ldflags", "-static-libgcc")
-        target:add("ldflags", "-static-libstdc++")
-        target:add("ldflags", "-Wl,--export-dynamic")
-        target:add("ldflags", "-Wl,--no-undefined")
-    elseif target:is_plat("macosx") then
-        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
+        if target:is_plat("linux") then
+            target:add("rpathdirs", "$ORIGIN")
+            target:add("ldflags", "-Wl,--no-undefined")
+            target:add("ldflags", "-static-libgcc")
+            target:add("ldflags", "-static-libstdc++")
+        end
+        if target:is_plat("macosx") then
+        end
     end
 end
 
 function dynlib_link_flags(target)
-    if target:is_plat("linux") then
-        target:add("rpathdirs", "$ORIGIN")
+    if target:is_plat("linux") or target:is_plat("macosx") then
         target:add("shflags", "-lm")
-        target:add("shflags", "-static-libgcc")
-        target:add("shflags", "-static-libstdc++")
-        target:add("shflags", "-Wl,--export-dynamic")
-        target:add("shflags", "-Wl,--no-undefined")
-    elseif target:is_plat("macosx") then
-        target:add("ldflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
+        if target:is_plat("linux") then
+            target:add("rpathdirs", "$ORIGIN")
+            target:add("shflags", "-Wl,--export-dynamic")
+            target:add("shflags", "-Wl,--no-undefined")
+            target:add("shflags", "-static-libgcc")
+            target:add("shflags", "-static-libstdc++")
+        end
+        if target:is_plat("macosx") then
+            target:add("shflags", "-Wl,-export_dynamic")
+        end
     end
 end
 
 function compile_flags(target)
-    if target:is_plat("linux") then
+    if target:is_plat("linux") or target:is_plat("macosx") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
         target:add("defines", "LIBHL_EXPORTS")
+        target:add("defines", "openal_soft")
 
         -- Build location independent settings
         target:add("cflags", "-Wall")
@@ -140,11 +146,13 @@ function compile_flags(target)
         target:add("cflags", "-mfpmath=sse")
         target:add("cflags", "-std=c11")
         target:add("cxflags", "-fpic")
-        target:add("cxflags", "-fno-omit-frame-pointer")
-        target:add("cxflags", "-ftls-model=global-dynamic")
-        target:add("cxflags", "-pthread")
-    elseif target:is_plat("macosx") then
-        target:add("cxflags", "-isysroot $(xcrun --sdk macosx --show-sdk-path)")
+        if target:is_plat("linux") then
+            target:add("cxflags", "-pthread")
+            target:add("cxflags", "-fno-omit-frame-pointer")
+            target:add("cxflags", "-ftls-model=global-dynamic")
+        end
+        if target:is_plat("macosx") then
+        end
     end
 end
 
@@ -206,6 +214,12 @@ target("libhl")
               "hashlink/include/pcre/pcre16_valid_utf16.c",
               "hashlink/include/pcre/pcre_ucd.c")
     add_files("hashlink/src/gc.c")
+    if is_plat("macosx") then
+        add_includedirs("hashlink/include")
+        add_files("hashlink/include/mdbg/mdbg.c",
+                  "hashlink/include/mdbg/mach_excServer.c",
+                  "hashlink/include/mdbg/mach_excUser.c")
+    end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 -----------------------------------------------------------------
@@ -308,6 +322,10 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
-    add_packages("libsdl", "libglvnd")
+    if is_plat("linux") then
+        add_packages("libsdl", "libglvnd")
+    elseif is_plat("macosx") then
+        add_packages("libsdl")
+    end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
