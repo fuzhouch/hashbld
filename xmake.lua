@@ -163,6 +163,8 @@ function compile_flags(target)
     if target:is_plat("windows") then
         target:add("defines", "UNICODE")
         target:add("defines", "_UNICODE")
+        -- for glext.h
+        target:add("cflags", "-Ihashlink/include/gl")
     end
 end
 
