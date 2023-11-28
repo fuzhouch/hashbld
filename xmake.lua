@@ -76,9 +76,15 @@ if is_plat("linux") then
     -- When packaging the builds, we separate libopenal.so.* to
     -- different folders. This .so file is only used when system
     -- default libopenal.so does not work.
-
 elseif is_plat("macosx") then
     add_frameworks("CoreFoundation", "Security", "OpenGL")
+elseif is_plat("windows") then
+    add_requires("winmm",        { system = true })
+    add_requires("opengl32",     { system = true })
+end
+
+if is_plat("windows") then
+    os.cp("ci_fix/SDL.h", "hashlink/include")
 end
 
 --
@@ -114,6 +120,8 @@ function binary_link_flags(target)
         if target:is_plat("macosx") then
         end
     end
+    if target:is_plat("windows") then
+    end
 end
 
 function dynlib_link_flags(target)
@@ -129,6 +137,8 @@ function dynlib_link_flags(target)
         if target:is_plat("macosx") then
             target:add("shflags", "-Wl,-export_dynamic")
         end
+    end
+    if target:is_plat("windows") then
     end
 end
 
@@ -153,6 +163,10 @@ function compile_flags(target)
         end
         if target:is_plat("macosx") then
         end
+    end
+    if target:is_plat("windows") then
+        target:add("defines", "UNICODE")
+        target:add("defines", "_UNICODE")
     end
 end
 
@@ -329,6 +343,9 @@ target("sdl")
         add_packages("libsdl", "libglvnd")
     elseif is_plat("macosx") then
         add_packages("libsdl")
+    elseif is_plat("windows") then
+        add_packages("libsdl", "winmm", "opengl32")
+        add_includedirs("hashlink/include")
     end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
