@@ -11,4 +11,6 @@ typedef struct
     char is_valid;
 } mbedtls_threading_mutex_t;
 
+#endif /* if defined(_MSC_VER) */
+
 #endif /* _MBEDTLS_THERADING_ALT_H_ */
