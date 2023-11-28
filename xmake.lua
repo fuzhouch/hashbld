@@ -166,6 +166,12 @@ function compile_flags(target)
     end
 end
 
+function copy_ci_fix(target)
+    if target:is_plat("windows") then
+        os.cp("ci_fix/SDL.h", "hashlink/include/SDL.h")
+    end
+end
+
 -- This function is used to combine multiple actions on same xmake hook.
 function chain_actions(...)
     local args = { ... }
@@ -335,13 +341,13 @@ target("sdl")
     add_files("hashlink/libs/sdl/sdl.c",
               "hashlink/libs/sdl/gl.c")
     add_deps("libhl")
+    add_packages("libsdl")
     if is_plat("linux") then
-        add_packages("libsdl", "libglvnd")
+        add_packages("libglvnd")
     elseif is_plat("macosx") then
-        add_packages("libsdl")
+        -- No special needs
     elseif is_plat("windows") then
-        add_packages("libsdl", "winmm", "opengl32")
         add_includedirs("hashlink/include")
     end
-    on_load(chain_actions(compile_flags, dynlib_link_flags))
+    on_load(chain_actions(copy_ci_fix, compile_flags, dynlib_link_flags))
 
