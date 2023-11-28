@@ -320,6 +320,19 @@ target("sqlite")
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("ssl")
+    -- Building SSL on mbedtls on Windows is disabled due to a lack of
+    -- correct approach to configure threading model.
+    -- MbedTLS2.x supports only pthread threading, on Windows it
+    -- requires we provide our own mbedtls_threading_mutex_t data
+    -- structure and enabled MBEDTLS_THREADING_ALT macro. However, the
+    -- macro must be defined in the config.h of mbedtls package. That
+    -- means, the current xmake can't correctly configure Windows.
+    --
+    -- I need to think of a correct approach to solve it. Before I have
+    -- a solution, let's disable "ssl" module for now.
+    if is_plat("windows") then
+        set_enabled(false)
+    end
     set_kind("shared")
     set_prefixname("")
     set_extension(".hdll")
@@ -329,9 +342,6 @@ target("ssl")
     add_packages("mbedtls")
     add_deps("libhl")
     if is_plat("windows") then
-        -- For platform-specific threading_alt.h
-        add_defines("MBEDTLS_THREADING_C", "MBEDTLS_THREADING_ALT")
-        add_includedirs("ci_fix/mbedtls2/")
         add_links("crypt32")
     end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
