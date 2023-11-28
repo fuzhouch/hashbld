@@ -20,13 +20,14 @@ environment. This project provides the following artifacts:
 
 ### Build Hashlink
 
-HashBLD uses [xmake](https://xmake.io) as build tool. Please refers to
-[Xmake's Official Guide](https://xmake.io/#/guide/installation) to
-install it to system.
+HashBLD uses [xmake](https://xmake.io) as a build tool with dependency
+management support (versioning, download, build, etc.) that meets my
+requirements. See section "Q & A" for details.
 
->
-> For Archlinux or Manjaro, it can be installed via ``pacman -S xmake``.
->
+Please refers to
+[Xmake's Official Guide](https://xmake.io/#/guide/installation) to
+install it to system. For Archlinux or Manjaro, it can be installed
+via ``pacman -S xmake``.
 
 After installing ``xmake``, follow the steps below:
 
