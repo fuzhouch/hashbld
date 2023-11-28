@@ -250,6 +250,7 @@ target("libhl")
 -----------------------------------------------------------------
 function copy_to_lib(target)
     local install_to = path.join(target:installdir(), "lib", target:filename())
+    print("[customized] copy " .. target:filename() .. " to " .. install_to)
     os.cp(target:targetfile(), install_to)
 end
 
