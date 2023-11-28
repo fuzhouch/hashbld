@@ -330,6 +330,7 @@ target("ssl")
     add_deps("libhl")
     if is_plat("windows") then
         -- For platform-specific threading_alt.h
+        add_defines("MBEDTLS_THREADING_ALT")
         add_includedirs("ci_fix/mbedtls2/")
         add_links("crypt32")
     end
