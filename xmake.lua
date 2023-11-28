@@ -1,6 +1,8 @@
 -- This xmake.lua build file is designed as a replacement of
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
+add_rules("mode.debug")
+add_rules("mode.release")
 
 -- ===================================================================
 -- Common dependendies
