@@ -111,10 +111,9 @@ function binary_link_flags(target)
             target:add("ldflags", "-static-libgcc")
             target:add("ldflags", "-static-libstdc++")
         end
-        if target:is_plat("macosx") then
-        end
     end
     if target:is_plat("windows") then
+        target:add("links", "user32")
     end
 end
 
@@ -133,14 +132,16 @@ function dynlib_link_flags(target)
         end
     end
     if target:is_plat("windows") then
+        target:add("links", "user32")
+        target:add("links", "ws2_32")
     end
 end
 
 function compile_flags(target)
+    target:add("defines", "LIBHL_EXPORTS")
     if target:is_plat("linux") or target:is_plat("macosx") then
         -- Build location specific
         target:add("cflags", "-Ihashlink/src")
-        target:add("defines", "LIBHL_EXPORTS")
         target:add("defines", "openal_soft")
 
         -- Build location independent settings
@@ -166,7 +167,7 @@ end
 
 function copy_ci_fix(target)
     if target:is_plat("windows") then
-        os.cp("ci_fix/SDL.h", "hashlink/include/SDL.h")
+        target:add("defines", "-Ici_fix/")
     end
 end
 
@@ -330,8 +331,7 @@ target("sdl")
     set_kind("shared")
     set_prefixname("")
     set_extension(".hdll")
-    -- Ci_fix folder contains only replaceable headers making hashlink
-    -- happy.
+    -- Ci_fix folder contains only replaceable headers for CI use.
     add_includedirs("hashlink/src")
     if os.isdir("hashlink/ci_fix") then
         add_includedirs("hashlink/ci_fix")
@@ -342,10 +342,6 @@ target("sdl")
     add_packages("libsdl")
     if is_plat("linux") then
         add_packages("libglvnd")
-    elseif is_plat("macosx") then
-        -- No special needs
-    elseif is_plat("windows") then
-        add_includedirs("hashlink/include")
     end
     on_load(chain_actions(copy_ci_fix, compile_flags, dynlib_link_flags))
 
