@@ -156,7 +156,7 @@ function compile_flags(target)
     if target:is_plat("windows") then
         target:add("defines", "UNICODE")
         target:add("defines", "_UNICODE")
-        target:add("defines", "USRDLL")
+        target:add("defines", "_USRDLL")
         -- for glext.h
         target:add("cflags", "-Ihashlink/include/gl")
     end
@@ -328,6 +328,9 @@ target("ssl")
     add_files("hashlink/libs/ssl/*.c")
     add_packages("mbedtls")
     add_deps("libhl")
+    if is_plat("windows") then
+        add_links("crypt32")
+    end
     on_load(chain_actions(compile_flags, dynlib_link_flags))
 
 target("openal")
