@@ -82,8 +82,8 @@ I'm working on a solution. Will update.
 
 ### How many platforms does HashBLD support?
 
-My plan is to support the platforms below. It's a list that still on
-progress.
+My plan is to support the platforms below. The list is still on
+progress, and keep updating:
 
 - [X] Linux desktop
 - [X] ~~Steam runtime (Linux, via Docker image)~~
@@ -112,34 +112,34 @@ maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it comes
 with 3 issues when I try to build a game with Heaps.io.
 
 The first issue is, the official ``Makefile`` and ``CMakeLists.txt``
-does not guaranteed to be built on all Operating Systems. For example,
-Hashlink 1.3 depends on Operating System to provide ``mbedtls`` to build
+are not guaranteed to be built on all Operating Systems. For example,
+Hashlink 1.3 depends on Operating Systems to provide ``mbedtls`` for
 ``ssl.hdll`` module. It uses an old, ``2.x`` version, while systems like
-Archlinux/Manjaro has been upgraded system to use an incompatible
-``mbedtls 3.x`` which causes build breaks. To build it, developers
-have to manually modify ``Makefile`` to point to correct ``mbedtls 2.x``
-path, based on Operating System settings. It's difficult to maintain,
-and hard to automate the build process.
+Archlinux/Manjaro has been upgraded to use ``mbedtls 3.x``. The ``3.x``
+version is incompatible with ``2.x``, which causes build breaks.
+To build it, I have to manually modify ``Makefile`` to point to
+correct ``mbedtls 2.x`` path, based on Operating System settings.
+It's difficult to maintain, and hard to automate the build process.
 
-The second issue is a dynamic linkage management. The official
-``Makefile`` and ``CMakeLists.txt`` searches dependencies with whatever
+The second issue is dynamic linkage management. The official
+``Makefile`` and ``CMakeLists.txt`` search dependencies with whatever
 versions provided by Operating System, mostly dynamically linked
-libraries. When copying the executable binaries from build machine to
+libraries. When copying the executable binaries from my build machine to
 client machines, it's not guaranteed to run because client machines may
-use different version of libraries, or just haven't installed some of
-them. It can impact from functionality libraries like ``libsdl``, to
-fundamental libraries like ``libc`` and ``libstdc++``.
-To fix the issue, I need to ensure most functionality
-code is linked statically. If some libraries must be linked dynamically
-(notably ``OpenAL`` and ``libsndio``), I want to exactly ensure their
-dependencies as well.
+use different version of dependencies, or just haven't installed some of
+them. The impacted dependencies vary from functionality libraries
+like ``libsdl``, to fundamental libraries like ``libc`` and ``libstdc++``.
+To fix the issue, most dependencies should be linked statically.
+If some of them must be linked dynamically
+(notably ``OpenAL`` and ``libsndio``), Their dependencies need to be
+checked as well.
 
-The last issue, is the ability to upgrade dependencies.
+The last issue is the ability to upgrade dependencies.
 Hashlink includes some dependencies in their code base, which are very
-old version. To prevent software bugs, esp., security breaches, I need
+old versions. To prevent software bugs, esp., security breaches, I need
 an ability to understand which version of dependencies I build with, and
 upgrade if necessary. This is especially true when a game needs to
-download data remotely and execute.
+download executable data remotely, e.g., network gaming.
 
 
 ### Known issues and solution
