@@ -83,10 +83,6 @@ elseif is_plat("windows") then
     add_requires("opengl32",     { system = true })
 end
 
-if is_plat("windows") then
-    os.cp("ci_fix/SDL.h", "hashlink/include")
-end
-
 --
 -- NOTE for Arch/Manjaro
 --
