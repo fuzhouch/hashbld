@@ -3,7 +3,10 @@
 
 add_rules("mode.debug")
 add_rules("mode.release")
+
+-- Windows: Override default /MT following official project settings.
 set_runtimes("MD")
+
 -- ===================================================================
 -- Common dependendies
 --
@@ -136,7 +139,6 @@ function libhl_link_flags(target)
 
     if target:is_plat("windows") then
         target:add("shflags", "/MANIFEST")
-        -- target:add("shflags", "/MANIFESTUAC:level=\'asInvoker\' uiAccess=\'false\'")
         target:add("shflags", "/manifest:embed")
         target:add("shflags", "/SUBSYSTEM:WINDOWS")
         target:add("shflags", "/TLBID:1")
@@ -162,7 +164,6 @@ function module_link_flags(target)
 
     if target:is_plat("windows") then
         target:add("shflags", "/MANIFEST")
-        -- target:add("shflags", "/MANIFESTUAC:level=\'asInvoker\' uiAccess=\'false\'")
         target:add("shflags", "/manifest:embed")
         target:add("shflags", "/SUBSYSTEM:WINDOWS")
         target:add("shflags", "/TLBID:1")
@@ -212,12 +213,6 @@ function compile_flags(target)
         target:add("cxflags", "/external:W3")
         target:add("cxflags", "/GS")
         target:add("cxflags", "/Gd")
-    end
-end
-
-function copy_ci_fix(target)
-    if target:is_plat("windows") then
-        -- target:add("includedirs", "ci_fix/")
     end
 end
 
@@ -382,6 +377,7 @@ target("ssl")
     -- a solution, let's disable "ssl" module for now.
     if is_plat("windows") then
         set_enabled(false)
+        add_links("crypt32")
     end
     set_kind("shared")
     set_prefixname("")
@@ -390,9 +386,6 @@ target("ssl")
     add_files("hashlink/libs/ssl/ssl.c")
     add_packages("mbedtls")
     add_deps("libhl")
-    if is_plat("windows") then
-        add_links("crypt32")
-    end
     on_load(chain_actions(compile_flags, module_link_flags))
 
 target("openal")
@@ -409,9 +402,12 @@ target("sdl")
     set_kind("shared")
     set_prefixname("")
     set_extension(".hdll")
-    -- Ci_fix folder contains only replaceable headers for CI use.
     add_includedirs("hashlink/src")
     if os.isdir("hashlink/ci_fix") then
+        -- Ci_fix folder contains only replaceable headers for CI use.
+        -- Please do not include $ProjectRoot/ci_fix directly. In Linux
+        -- it may cause xmake stuck. The copy of ci_fix here is done by
+        -- CI.
         add_includedirs("hashlink/ci_fix")
     end
     add_files("hashlink/libs/sdl/sdl.c",
@@ -420,10 +416,8 @@ target("sdl")
     add_packages("libsdl")
     if is_plat("linux") then
         add_packages("libglvnd")
-    end
-    if is_plat("windows") then
+    elseif is_plat("windows") then
         add_defines("SDL_EXPORTS")
         add_links("opengl32", "winmm", "user32")
     end
     on_load(chain_actions(compile_flags, module_link_flags))
-
