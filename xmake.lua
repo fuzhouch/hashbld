@@ -262,24 +262,36 @@ target("libhl")
               "hashlink/src/std/ucs2.c",
               "hashlink/src/std/thread.c",
               "hashlink/src/std/process.c")
-    -- Hashlink saves a copy of an old pcre version 8.42, which is
-    -- unavailable in xmake repository. The earlest available version,
-    -- pcre 8.45, causes crashes in Linux.
-    --
-    -- Let's use built-in version. Supposed it should be updated in master version.
-    add_files("hashlink/include/pcre/pcre_chartables.c",
-              "hashlink/include/pcre/pcre_compile.c",
-              "hashlink/include/pcre/pcre_dfa_exec.c",
-              "hashlink/include/pcre/pcre_exec.c",
-              "hashlink/include/pcre/pcre_fullinfo.c",
-              "hashlink/include/pcre/pcre_globals.c",
-              "hashlink/include/pcre/pcre_newline.c",
-              "hashlink/include/pcre/pcre_string_utils.c",
-              "hashlink/include/pcre/pcre_tables.c",
-              "hashlink/include/pcre/pcre_xclass.c",
-              "hashlink/include/pcre/pcre16_ord2utf16.c",
-              "hashlink/include/pcre/pcre16_valid_utf16.c",
-              "hashlink/include/pcre/pcre_ucd.c")
+    -- pcre2 can't be easily configured via xmake package because it
+    -- requires a config.h file with a lot of configurations.
+    add_defines("HAVE_CONFIG_H", "PCRE2_CODE_UNIT_WIDTH=16")
+    add_files("hashlink/include/pcre/pcre2_auto_possess.c",
+              "hashlink/include/pcre/pcre2_chartables.c",
+              "hashlink/include/pcre/pcre2_compile.c",
+	      "hashlink/include/pcre/pcre2_config.c",
+              "hashlink/include/pcre/pcre2_context.c",
+              "hashlink/include/pcre/pcre2_convert.c",
+              "hashlink/include/pcre/pcre2_dfa_match.c",
+              "hashlink/include/pcre/pcre2_error.c",
+              "hashlink/include/pcre/pcre2_extuni.c",
+              "hashlink/include/pcre/pcre2_find_bracket.c",
+              "hashlink/include/pcre/pcre2_jit_compile.c",
+              "hashlink/include/pcre/pcre2_maketables.c",
+	      "hashlink/include/pcre/pcre2_match_data.c",
+              "hashlink/include/pcre/pcre2_match.c",
+              "hashlink/include/pcre/pcre2_newline.c",
+	      "hashlink/include/pcre/pcre2_ord2utf.c",
+              "hashlink/include/pcre/pcre2_pattern_info.c",
+              "hashlink/include/pcre/pcre2_script_run.c",
+              "hashlink/include/pcre/pcre2_serialize.c",
+              "hashlink/include/pcre/pcre2_string_utils.c",
+              "hashlink/include/pcre/pcre2_study.c",
+              "hashlink/include/pcre/pcre2_substitute.c",
+              "hashlink/include/pcre/pcre2_substring.c",
+              "hashlink/include/pcre/pcre2_tables.c",
+              "hashlink/include/pcre/pcre2_ucd.c",
+              "hashlink/include/pcre/pcre2_valid_utf.c",
+              "hashlink/include/pcre/pcre2_xclass.c")
     add_files("hashlink/src/gc.c")
     if is_plat("macosx") then
         add_includedirs("hashlink/include")
