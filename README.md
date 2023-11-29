@@ -34,8 +34,8 @@ After installing ``xmake``, follow the steps below:
 1. Checkout build scripts: ``git checkout https://github.com/fuzhouch/hashbld``.
 2. Go to local folder of repository ``./hashbld``.
 3. Checkout Hashlink code base and set branches: ``bash ./clone-code.sh``.
-4. Build project: ``xmake build --rebuild --all``.
-5. Create runnable package: ``xmake install --installdir=./package --all``.
+4. Build project: ``xmake build --rebuild``.
+5. Create runnable package: ``xmake install -o ./package``.
 
 After building, go to ``./package/lib``. All built binaries, including
 virtual machine ``hl``, core libraries ``libhl.so`` (or ``libhl.dynlib``
@@ -65,7 +65,9 @@ Please use the steps below to run:
 1. Download and install [Haxe compiler](https://haxe.org/).
 2. Install Haxe libraries: ``haxelib install heaps format hashlink, hlopenal, hlsdl``.
 3. Compile bytecode: ``cd hashbld/hello-world && haxe compile.hxml``
-4. Run program: ``./packages/lib/hl ./hello-world/hello.hl``.
+4. Run program to execute test window:
+   - Windows: ``./packages/bin/hl.exe ./hello-world/hello.hl``.
+   - macOS and Linux: ``./packages/lib/hl ./hello-world/hello.hl``.
 
 A black window with a string "Hello Hashlink!" message should show on
 desktop.
@@ -86,13 +88,13 @@ My plan is to support the platforms below. The list is still on
 progress, and keep updating:
 
 - [X] Linux desktop
-- [X] ~~Steam runtime (Linux, via Docker image)~~
-- [ ] Windows desktop
+- [ ] ~~Steam runtime (Linux, via Docker image)~~
+- [X] Windows desktop
 - [X] macOS desktop
   - [ ] Code sign
   - [ ] Notarization
 - [ ] iOS (including codesign and notarization)
-- [X] ~~Android ARM~~
+- [ ] ~~Android ARM~~
 
 
 Steam runtime is removed from support list because it comes
@@ -111,36 +113,52 @@ code to C, then compile it via cross-compliation toolset.
 maintains its own ``Makefile`` and ``CMakeLists.txt``. However, it comes
 with 3 issues when I try to build a game with Heaps.io.
 
-The first issue is, the official ``Makefile`` and ``CMakeLists.txt``
-are not guaranteed to be built on all Operating Systems. For example,
+**Issue 1: It does not always build.** The official ``Makefile``
+and ``CMakeLists.txt`` rely on headers or packages provided by system,
+while system may provide incompatible versions. For example,
 Hashlink 1.3 depends on Operating Systems to provide ``mbedtls`` for
 ``ssl.hdll`` module. It uses an old, ``2.x`` version, while systems like
 Archlinux/Manjaro has been upgraded to use ``mbedtls 3.x``. The ``3.x``
-version is incompatible with ``2.x``, which causes build breaks.
-To build it, I have to manually modify ``Makefile`` to point to
-correct ``mbedtls 2.x`` path, based on Operating System settings.
-It's difficult to maintain, and hard to automate the build process.
+version introduces many incompatible changes comparing with ``2.x``.
+It causes build breaks.
 
-The second issue is dynamic linkage management. The official
-``Makefile`` and ``CMakeLists.txt`` search dependencies with whatever
-versions provided by Operating System, mostly dynamically linked
-libraries. When copying the executable binaries from my build machine to
-client machines, it's not guaranteed to run because client machines may
-use different version of dependencies, or just haven't installed some of
-them. The impacted dependencies vary from functionality libraries
-like ``libsdl``, to fundamental libraries like ``libc`` and ``libstdc++``.
-To fix the issue, most dependencies should be linked statically.
-If some of them must be linked dynamically
-(notably ``OpenAL`` and ``libsndio``), Their dependencies need to be
-checked as well.
+**Issue 2: It is not always portable**. By relying on Operating Systems
+providing dependencies, the official ``Makefile`` or ``CMakeLists.txt`` usually
+link to shared libraries. Thus, when copying the executable binaries from
+developers' build machines to client machines, it can break when client
+machines do not have same version of dependencies installed. This is
+a common scenario in Linux world, from high-level functionality
+libraries like ``MbedTLS`` to infrastructures like ``libc`` and
+``libstdc++``.
 
-The last issue is the ability to upgrade dependencies.
-Hashlink includes some dependencies in their code base, which are very
-old versions. To prevent software bugs, esp., security breaches, I need
-an ability to understand which version of dependencies I build with, and
-upgrade if necessary. This is especially true when a game needs to
-download executable data remotely, e.g., network gaming.
+**Issue 3: It is always unsafe**. To solve issue 1 and 2, Hashlink includes
+dependencies in source code repo. However they are not upgraded often,
+results in old versions using. This could lead to potential security
+breaches if a game attempts to download executable logic from Internet,
+or take inputs from other local applications.
 
+HashBLD tries to address the issues above by applying 3 rules:
+
+1. ``Avoid system dependencies if possible``. HashBLD tries to build
+   and distribute dependencies ourselves, eliminating any explicit or
+   implicit dependencies. Only a few really fundamental dependencies, like
+   ``openal-soft`` or ``OpenGL``, are required to be provided by Operating
+   Systems. It maximizes possibility to build the project in different machines.
+
+2. ``Dependencies are versioned``. HashBLD does not use the
+   checked-in dependency code. Instead, it downloads released source code
+   of each dependency by version from Interent. With this approach, we
+   exactly know which version we are using, so we can make upgrading choice
+   on a security breach. Note that some exceptions may apply due to
+   technical challenges, notably ``pcre``. They should be fixed in
+   future versions.
+
+3. ``Prefer static over shared if possile``. HashBLD links against static
+   libraries for most dependencies. It reduces the
+   risk of version conflict between our own built dependencies and
+   system provided dependencies. There are some exceptions due to its
+   own project nature though, e.g., ``openal-soft``, ``libsndio`` and
+   ``libglvnd``.
 
 ### Known issues and solution
 
@@ -148,12 +166,25 @@ download executable data remotely, e.g., network gaming.
   mostly ``libuv``, which requires functionalities from high version of
   GCCs. Some systems with old compilers may not support building it.
 
-- Hashlink prefers build
+- Hashlink prefers building
   [targeting Github versions](https://haxe.org/manual/target-hl-getting-started.html),
   to install libraries. Though it does not sound like a good solution
   from engineering point of view, the official haxelibs have bigger issue.
   It still uses a lot of old syntax, causing many build warnings.
   Haven't dig out a repeatable solution yet.
+
+- The ``ssl.hdll`` module is not built on Windows. This is caused by
+  restrictions of XMake when building ``EmbdTLS 2.x``. Unlike other
+  dependencies, ``EmbdTLS 2.x`` requires developer customize project
+  settings via a ``config.h`` header instead of CMake file command line
+  options. Hashlink requires a customized ``config.h`` to insert
+  its own implementation of ``mbedtls_threading_mutex_t`` structure to
+  multi-threading support on Windows (defined in
+  ``hashlink/include/mbedtls/include/mbedtls/threading_alt.h``.
+  Unfortunately [XRepo's pacakge](https://github.com/xmake-io/xmake-repo/blob/master/packages/m/mbedtls/xmake.lua)
+  does not offer a way to insert our own ``config.h``. As security is a
+  consideration, I have to disable it for now.
+
 
 - By 2023-11, Hashlink master branch is preparing a breaking change from
   current 1.13 to master branch (1.14). If we build Hashlink from master
