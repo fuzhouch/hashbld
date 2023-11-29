@@ -86,13 +86,13 @@ My plan is to support the platforms below. The list is still on
 progress, and keep updating:
 
 - [X] Linux desktop
-- [X] ~~Steam runtime (Linux, via Docker image)~~
-- [ ] Windows desktop
+- [ ] ~~Steam runtime (Linux, via Docker image)~~
+- [X] Windows desktop
 - [X] macOS desktop
   - [ ] Code sign
   - [ ] Notarization
 - [ ] iOS (including codesign and notarization)
-- [X] ~~Android ARM~~
+- [ ] ~~Android ARM~~
 
 
 Steam runtime is removed from support list because it comes
