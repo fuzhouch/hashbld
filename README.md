@@ -10,7 +10,7 @@ environment. This project provides the following artifacts:
 * Verified build scripts to build HashBLD on all platforms. Verified by
   the official [Hello Hashlink](https://heaps.io/documentation/hello-hashlink.html)
   example.
-* Dependencies with nown versions (avoid using checked-in source code
+* Dependencies with known versions (avoid using checked-in source code
   in Hashlink codebase)
 * Portable build. Ensure build can be copied and used to different
   machines, with minimal dynamic linked libraries requirements from
@@ -18,22 +18,22 @@ environment. This project provides the following artifacts:
 
 ## Quick start
 
-### Build Hashlink
+### Xmake as build tool
 
 HashBLD uses [xmake](https://xmake.io) as a build tool with dependency
 management support (versioning, download, build, etc.) that meets my
-requirements. See section "Q & A" for details.
-
-Please refers to
+requirements. See section "Q & A" for details. Please refers to
 [Xmake's Official Guide](https://xmake.io/#/guide/installation) to
 install it to system. For Archlinux or Manjaro, it can be installed
 via ``pacman -S xmake``.
+
+### Build Hashlink
 
 After installing ``xmake``, follow the steps below:
 
 1. Checkout build scripts: ``git checkout https://github.com/fuzhouch/hashbld``.
 2. Go to local folder of repository ``./hashbld``.
-3. Checkout Hashlink code base and set branches: ``bash ./clone-code.sh``.
+3. Checkout Hashlink code base to master: ``bash ./clone-code.sh``.
 4. Build project: ``xmake build --rebuild``.
 5. Create runnable package: ``xmake install -o ./package``.
 
@@ -63,7 +63,7 @@ To use it, we should compile it to bytecode first, then run it with
 Please use the steps below to run:
 
 1. Download and install [Haxe compiler](https://haxe.org/).
-2. Install Haxe libraries: ``haxelib install heaps format hashlink, hlopenal, hlsdl``.
+2. Install libraries with development/latest version: ``bash ./install-haxe-libs.sh``.
 3. Compile bytecode: ``cd hashbld/hello-world && haxe compile.hxml``
 4. Run program to execute test window:
    - Windows: ``./packages/bin/hl.exe ./hello-world/hello.hl``.
@@ -185,17 +185,7 @@ HashBLD tries to address the issues above by applying 3 rules:
   does not offer a way to insert our own ``config.h``. As security is a
   consideration, I have to disable it for now.
 
+## Reference
 
-- By 2023-11, Hashlink master branch is preparing a breaking change from
-  current 1.13 to master branch (1.14). If we build Hashlink from master
-  branch, it can't execute bytecode compiled by official Haxe 4.3.1.
-  If we do so, Hashlink exits with an error message like below.
-  Seems similar issue happened before in
-  [Github](https://github.com/HaxeFoundation/hashlink/issues/39).
-  There's no solution yet. Let's wait for 1.14 release.
-
-```
-/home/fuzhouch/projects/thirdparty/hashlink/src/module.c(574) :
-FATAL ERROR : Invalid signature for function fmt@mp3_open :
-PBi_Xfmt_mp3_ required but P_Xfmt_mp3_ found in hdll
-```
+- [Unofficial Heaps.io FAQ](https://gist.github.com/Yanrishatum/ae3725a9e2b45e0766c065e573ed1f24)
+- [Using Haxelib](https://lib.haxe.org/documentation/using-haxelib/)
