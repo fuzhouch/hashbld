@@ -132,7 +132,7 @@ libraries like ``MbedTLS`` to infrastructures like ``libc`` and
 ``libstdc++``.
 
 **Issue 3: It is not always safe**. To solve issue 1 and 2, Hashlink
-includes dependencies sourre code as part of its own repo.
+includes dependencies source code as part of its own repo.
 However they are not upgraded often, results in old versions used for
 many years (e.g., Hashlink uses old pcre version back to 2018, which was
 upgraded in master branch at March 25, 2023, see
