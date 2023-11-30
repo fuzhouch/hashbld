@@ -35,21 +35,20 @@ After installing ``xmake``, follow the steps below:
 2. Go to local folder of repository ``./hashbld``.
 3. Checkout Hashlink code base to master: ``bash ./clone-code.sh``.
 4. Build project: ``xmake build --rebuild``.
-5. Create runnable package: ``xmake install -o ./package``.
+5. Create runnable package: ``xmake install -o ./package64``.
 
-After building, go to ``./package/lib``. All built binaries, including
+After building, go to ``./package64/lib`` (macOS or Linux), or
+``./package64/bin`` (Windows). All built binaries, including
 virtual machine ``hl``, core libraries ``libhl.so`` (or ``libhl.dynlib``
 for macOS), and 7 modules (``fmt.hdll``, ``openal.hdll``, ``sdl.hdll``,
 ``sqlite.hdll``, ``ssl.hdll``, ``ui.hdll``, ``uv.hdll``), are saved
 under same folder. It can be packaged and copied to other machines for
 use.
 
-Note that ``clone-code.sh`` builds Hashlink in version 1.3. The master
-branch is introducing a breaking change by the time Nov 28, 2023, which
-does not work with released haxelib libraries. See section "Q & A" for
-details.
-
-I'm working on a solution to allow we use master branch. Will update.
+Note that ``clone-code.sh`` builds Hashlink in version master branch.
+Per suggestion from community, the Haxelib version of Hashlink and Heaps
+library are usually out-dated. We should use master branch. See the
+unofficial Q & A in Reference section for more details.
 
 ### Run hello-world
 
@@ -66,8 +65,8 @@ Please use the steps below to run:
 2. Install libraries with development/latest version: ``bash ./install-haxe-libs.sh``.
 3. Compile bytecode: ``cd hashbld/hello-world && haxe compile.hxml``
 4. Run program to execute test window:
-   - Windows: ``./packages/bin/hl.exe ./hello-world/hello.hl``.
-   - macOS and Linux: ``./packages/lib/hl ./hello-world/hello.hl``.
+   - Windows: ``./packages64/bin/hl.exe ./hello-world/hello.hl``.
+   - macOS and Linux: ``./packages64/lib/hl ./hello-world/hello.hl``.
 
 A black window with a string "Hello Hashlink!" message should show on
 desktop.
@@ -75,7 +74,7 @@ desktop.
 Note that we may see a lot of warnings from command when compiling
 bytecode, this is because the released haxelib library version is 
 behind the development of Haxe compiler. It can be annoying because the
-warnings can hide the true errors. The section "Q & A" for details.
+warnings can hide the true errors. The section Q & A for details.
 
 I'm working on a solution. Will update.
 
@@ -116,7 +115,7 @@ with 3 issues when I try to build a game with Heaps.io.
 **Issue 1: It does not always build.** The official ``Makefile``
 and ``CMakeLists.txt`` rely on headers or packages provided by system,
 while system may provide incompatible versions. For example,
-Hashlink 1.3 depends on Operating Systems to provide ``mbedtls`` for
+Hashlink 1.13 depends on Operating Systems to provide ``mbedtls`` for
 ``ssl.hdll`` module. It uses an old, ``2.x`` version, while systems like
 Archlinux/Manjaro has been upgraded to use ``mbedtls 3.x``. The ``3.x``
 version introduces many incompatible changes comparing with ``2.x``.
