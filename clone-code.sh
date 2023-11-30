@@ -12,9 +12,9 @@ git clone https://github.com/HaxeFoundation/hashlink hashlink
 echo ===============================================================
 echo Hashlink code checked out. Please build with Xmake with steps below.
 echo 
-echo     xmake config -p windows -a x64 -m <debug|release>
+echo     xmake config -p windows -a x64 -m {debug or release}
 echo     or
-echo     xmake config -p linux|macosx> -a x86_64 -m <debug|release>
+echo     xmake config -p {linux or macosx} -a x86_64 -m { debug or release}
 echo     xmake build
 echo     xmake install -o package64
 echo ===============================================================
