@@ -21,8 +21,7 @@ echo ===============================================================
 #
 #     haxelib git heaps https://github.com/HeapsIO/heaps.git 6ccc6ad
 #
-haxelib git heaps https://github.com/HeapsIO/heaps.git master
 haxelib dev hlsdl hashlink/libs/sdl/
 haxelib dev hlopenal hashlink/libs/openal/
 haxelib dev hashlink hashlink/other/haxelib/
-haxelib install heaps
+haxelib git heaps https://github.com/HeapsIO/heaps.git master
