@@ -1,7 +1,7 @@
 @echo off
 echo ===============================================================
 echo IMPORTANT: The script should be executed after building hashlink.
-echo If it's not done, the script can run but libraries can't work.
+echo If it's not done, the script can run but libraries do not work.
 echo ===============================================================
 REM  We use the .hx file in hashlink code path to setup haxelib.
 REM  
