@@ -131,11 +131,15 @@ a common scenario in Linux world, from high-level functionality
 libraries like ``MbedTLS`` to infrastructures like ``libc`` and
 ``libstdc++``.
 
-**Issue 3: It is always unsafe**. To solve issue 1 and 2, Hashlink includes
-dependencies in source code repo. However they are not upgraded often,
-results in old versions using. This could lead to potential security
-breaches if a game attempts to download executable logic from Internet,
-or take inputs from other local applications.
+**Issue 3: It is not always safe**. To solve issue 1 and 2, Hashlink
+includes dependencies sourre code as part of its own repo.
+However they are not upgraded often, results in old versions used for
+many years (e.g., Hashlink uses old pcre version back to 2018, which was
+upgraded in master branch at March 25, 2023, see
+[this merge request](https://github.com/HaxeFoundation/hashlink/pull/515)).
+If a dependency has a security breach, it's hard to fix, leaving potential
+risks to players. This is especially true if a game attempts to download
+executable logic from Internet, or take inputs from other local applications.
 
 HashBLD tries to address the issues above by applying 3 rules:
 
