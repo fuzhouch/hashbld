@@ -1,0 +1,6 @@
+-cp src
+-lib heaps
+-lib hlsdl
+-main Main
+-hl out\main.c
+-D hlgen.makefile=vs2019
