@@ -71,21 +71,23 @@ add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, config
 -- Operating System. 
 -- ===================================================================
 if is_plat("linux") then
-    add_requires("libsdl 2.28.5",         { system = false, configs = { shared = false, sdlmain = false } })
-    add_requires("libglvnd 1.3.4",     { system = false })
-    add_requires("alsa-lib 1.2.10",    { system = false })
-    add_requires("libsndio 1.9.0",     { system = false })
-    -- Notes for OpenAL on Linux
-    -- We cannot ensure openal is installed in CI machine
-    -- Thus we have to build it with our own package.
-    -- When packaging the builds, we separate libopenal.so.* to
-    -- different folders. This .so file is only used when system
-    -- default libopenal.so does not work.
+    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
+    add_requires("libglvnd 1.3.4",  { system = false })
+
+    -- The two libraries are compiled as shared library to fit
+    -- openal-soft needs. Hashlink uses alGetProcAddress() (aka,
+    -- dlopen()) to load OpenAL extension APIs. Thus, compiling OpenAL
+    -- as static library is not an option for Hashlink. It leads to a
+    -- chain effect, that OpenAL depends on alsa-lib and libsndio. They
+    -- needs to be built as shared library too, in order to package with
+    -- OpenAL shared libraries.
+    add_requires("alsa-lib 1.2.10", { system = false, configs = { shared = true } })
+    add_requires("libsndio 1.9.0",  { system = false, configs = { shared = true } })
 elseif is_plat("macosx") then
-    add_requires("libsdl 2.28.5",         { system = false, configs = { shared = false, sdlmain = false } })
+    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
     add_frameworks("CoreFoundation", "Security", "OpenGL")
 elseif is_plat("windows") then
-    add_requires("libsdl 2.28.5",         { system = false, configs = { shared = true, sdlmain = false } })
+    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = true, sdlmain = false } })
 end
 
 --
@@ -407,7 +409,11 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    add_packages("openal", "alsa-lib", "libsndio")
+    if is_plat("linux") then
+        add_packages("openal", "alsa-lib", "libsndio")
+    else
+        add_packages("openal")
+    end
     on_load(chain_actions(compile_flags, module_link_flags))
 
 target("sdl")
