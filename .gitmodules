@@ -1,0 +1,3 @@
+[submodule "deps/sndio"]
+	path = deps/sndio
+	url = https://github.com/ratchov/sndio
