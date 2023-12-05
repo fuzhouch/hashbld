@@ -64,4 +64,3 @@ jobs:
               ./xmake-build/bin/xmake install -o ./package --all
               rm -rf ./package/bin ./package/include
               mv ./package/lib/* ./package/
-              mv ./package/libopenal.* ./package/lib/
