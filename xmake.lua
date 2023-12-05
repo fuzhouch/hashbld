@@ -1,32 +1,34 @@
 -- This xmake.lua build file is designed as a replacement of
 -- Makefile or CMakeLists.txt of standard hashlink releases.
 
-add_rules("mode.debug")
-add_rules("mode.release")
+add_rules("mode.debug", "mode.release")
 
 -- Windows: Override default /MT following official project settings.
-set_runtimes("MD")
+if is_plat("windows") then
+    set_runtimes("MD")
+end
 
 -- ===================================================================
 -- Common dependendies
 --
--- These dependencies are downloaded and built with hashlink. We don't
--- use any OS provided packages.
+-- These dependencies are downloaded and built with hashlink. Our goal
+-- is to make sure our built binaries can be copied and dropped to any
+-- machines. Thus, our build don't use any OS provided dependencies.
 --
 -- We apply different strategies on different Operating systems:
 --
--- On Linux, we maintain all dependencies ourselves, as static
--- libraries. This is to make sure we eliminate any possible version
--- mismatching issue in libstdc++.so and libgcc_s.so. The only
--- exceptions are listed below:
+-- Linux - 
+-- We maintain all dependencies ourselves, as static libraries.
+-- This is to make sure we eliminate any possible version
+-- mismatching issue in libstdc++.so and libgcc_s.so. We also fixed some
+-- issues as below:
 --
--- 1. libsndio: No option to build as static library.
--- 2. libopenal: Though libopenal supports a static link option,
---    hashlink uses in a dynamic way: See definition of
---    openal.c!al_load_extensions(): all functions are loaded via
---    alGetProcAddress(). Thus a static build library causes link error.
--- 2. OpenGL - The "true" OpenGL. We depend on libglvnd to dispatch real
---    calls, and libglvnd depends on true libraries on OS.
+-- 1. libsndio: Official build has only static library. We provide our
+--    own xmake package to make it work.
+-- 2. openal-soft: Hashlink has a trick https://github.com/HaxeFoundation/hashlink/issues/636
+--    that requires shared link. I have applied a private fix.
+-- 3. OpenGL - We depend on libglvnd to dispatch real calls to system.
+--    The graphics system can't be included.
 --
 -- [TBD] On macOS, we use minimal set of system Frameworks.
 --
@@ -34,34 +36,23 @@ set_runtimes("MD")
 -- libraries. This is because many dependencies are not installed by
 -- default on Windows.
 --
---
--- Details of OpenAL-soft issue
---
--- OpenAL-soft is also a C++ library. It suffers from the libstdc++.so
--- and libgcc_s.so version mismatching problem. Although we can maintain
--- our own openal-soft dynamically loaded library, it rely on the
--- libstdc++.so library on build machine. It can break our built binaries
--- when moving to another Linux distro.
---
--- As there's no reliable way to build a static library without
--- modifying hashlink code design. I have to leave this dependency to
--- Operating System.
---
--- As hashlink is indeed an MIT software, the legal risk should be fine.
--- Thus, I just build it as statically linked library.
---
 -- ===================================================================
+add_repositories("local-repo deps")
 add_requires("mikktspace 2020.03.26", { system = false })
 add_requires("libvorbis 1.3.7",       { system = false })
 add_requires("libpng v1.6.40",        { system = false })
 add_requires("minimp3 2021.05.29",    { system = false })
-add_requires("sqlite3 3.43.0+200",    { system = false })
-add_requires("mbedtls 2.28.3",        { system = false })
 add_requires("libjpeg-turbo 2.1.4",   { system = false })
+
 add_requires("libuv v1.46.0",         { system = false })
-add_requires("libogg v1.3.4",         { system = false, configs = { shared = false }})
-add_requires("zlib v1.3",             { system = false, configs = { shared = false }})
-add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, configs = { shared = true } })
+add_requires("mbedtls 2.28.3",        { system = false })
+add_requires("sqlite3 3.43.0+200",    { system = false })
+add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, configs = { shared = false } })
+add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
+
+add_requireconfs("openal-soft.**",    { system = false, configs = { shared = false } })
+add_requireconfs("libvorbis.**",      { system = false, configs = { shared = false } })
+add_requireconfs("libpng.**",      { system = false, configs = { shared = false } })
 
 -- ===================================================================
 -- OS-specific dependencies
@@ -71,23 +62,11 @@ add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, config
 -- Operating System. 
 -- ===================================================================
 if is_plat("linux") then
-    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
     add_requires("libglvnd 1.3.4",  { system = false })
-
-    -- The two libraries are compiled as shared library to fit
-    -- openal-soft needs. Hashlink uses alGetProcAddress() (aka,
-    -- dlopen()) to load OpenAL extension APIs. Thus, compiling OpenAL
-    -- as static library is not an option for Hashlink. It leads to a
-    -- chain effect, that OpenAL depends on alsa-lib and libsndio. They
-    -- needs to be built as shared library too, in order to package with
-    -- OpenAL shared libraries.
-    add_requires("alsa-lib 1.2.10", { system = false, configs = { shared = true } })
-    add_requires("libsndio 1.9.0",  { system = false, configs = { shared = true } })
 elseif is_plat("macosx") then
-    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
     add_frameworks("CoreFoundation", "Security", "OpenGL")
 elseif is_plat("windows") then
-    add_requires("libsdl 2.28.5",   { system = false, configs = { shared = true, sdlmain = false } })
+    -- No special requirements for now.
 end
 
 --
@@ -343,10 +322,7 @@ target("fmt")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/fmt/*.c")
     add_deps("libhl")
-    add_packages("mikktspace",
-                 "xmake::zlib",
-                 "minimp3", "libvorbis", "xmake::libogg",
-                 "libpng", "libjpeg-turbo")
+    add_packages("mikktspace", "minimp3", "libvorbis", "libpng", "libjpeg-turbo")
     on_load(chain_actions(compile_flags, module_link_flags))
 
 target("ui")
@@ -409,11 +385,7 @@ target("openal")
     add_includedirs("hashlink/src")
     add_files("hashlink/libs/openal/openal.c")
     add_deps("libhl")
-    if is_plat("linux") then
-        add_packages("openal", "alsa-lib", "libsndio")
-    else
-        add_packages("openal")
-    end
+    add_packages("openal")
     on_load(chain_actions(compile_flags, module_link_flags))
 
 target("sdl")
