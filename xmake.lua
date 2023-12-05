@@ -197,7 +197,7 @@ function compile_flags(target)
     end
 end
 
--- This function is used to combine multiple actions on same xmake hook.
+-- It's a utility function to combine multiple actions on same xmake hook.
 function chain_actions(...)
     local args = { ... }
     return function(target)
