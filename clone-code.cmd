@@ -1,12 +1,15 @@
 @echo off
+echo ===============================================================
 echo Cloning code: https://github.com/HaxeFoundation/hashlink
 git clone https://github.com/HaxeFoundation/hashlink hashlink
 echo Done
+echo ===============================================================
 echo Patching openal-static-build patch
 cd hashlink
 git apply ../patches/openal-static-build.patch
 cd ..
 echo Done
+echo ===============================================================
 
 REM  
 REM  Hashlink master branch must work with Heaps master. Using Hashlink
