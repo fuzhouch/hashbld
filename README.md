@@ -45,10 +45,16 @@ for macOS), and 7 modules (``fmt.hdll``, ``openal.hdll``, ``sdl.hdll``,
 under same folder. It can be packaged and copied to other machines for
 use.
 
-Note that ``clone-code.sh`` builds Hashlink in version master branch.
+Note 1: ``clone-code.sh`` builds Hashlink in version master branch.
 Per suggestion from community, the Haxelib version of Hashlink and Heaps
 library are usually out-dated. We should use master branch. See the
 unofficial Q & A in Reference section for more details.
+
+Note 2: ``Hashbld`` actually insert an unofficial patch in ``openal.c``
+to allow it build against static library instead of dynamically
+loaded version. When rerunning ``clone-code.sh`` or ``clone-code.cmd``,
+the script reverts any changes in order to apply fix. If you hacks any
+part of Hashlink, please commit your changes before rerunning.
 
 ### Run hello-world
 

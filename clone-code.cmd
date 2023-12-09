@@ -1,8 +1,16 @@
 @echo off
 echo ===============================================================
-echo Cloning code: https://github.com/HaxeFoundation/hashlink
-git clone https://github.com/HaxeFoundation/hashlink hashlink
-echo Done
+if exist .\hashlink\ (
+    echo ./hashlink folder exists. Reset code and pull latest.
+    cd hashlink
+    git checkout -- .
+    git pull
+    cd ..
+) else (
+    echo Cloning code: https://github.com/HaxeFoundation/hashlink
+    git clone https://github.com/HaxeFoundation/hashlink hashlink
+    echo Done
+)
 echo ===============================================================
 echo Patching openal-static-build patch
 cd hashlink
