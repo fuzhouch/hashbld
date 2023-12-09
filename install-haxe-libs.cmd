@@ -23,4 +23,5 @@ REM
 haxelib dev hlsdl hashlink/libs/sdl/
 haxelib dev hlopenal hashlink/libs/openal/
 haxelib dev hashlink hashlink/other/haxelib/
+haxelib --always git format https://github.com/HaxeFoundation/format.git master
 haxelib --always git heaps https://github.com/HeapsIO/heaps.git master
