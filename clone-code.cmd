@@ -14,7 +14,6 @@ if exist .\hashlink\ (
 echo ===============================================================
 echo Patching openal-static-build patch
 cd hashlink
-git apply ../patches/openal-static-build.patch
 cd ..
 echo Done
 echo ===============================================================
