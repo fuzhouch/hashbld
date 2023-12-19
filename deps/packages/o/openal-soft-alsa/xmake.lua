@@ -62,7 +62,7 @@ package("openal-soft-alsa")
 
                 table.insert(configs, "-DALSOFT_STATIC_LIBGCC=ON")
                 table.insert(configs, "-DALSOFT_STATIC_STDCXX=ON")
-                io.replace("CMakeLists.txt", "set(LINKDER_FLAGS )", "set(LINKDER_FLAGS \"-static-libstdc++\")", {plain = true})
+                io.replace("CMakeLists.txt", "set(LINKER_FLAGS )", "set(LINKER_FLAGS \"-static-libstdc++\")", {plain = true})
             end
             table.insert(configs, "-DLIBTYPE=SHARED")
         else
