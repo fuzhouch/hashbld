@@ -49,12 +49,12 @@ add_requires("libjpeg-turbo 2.1.4",   { system = false })
 add_requires("libuv v1.46.0",         { system = false })
 add_requires("mbedtls 2.28.3",        { system = false })
 add_requires("sqlite3 3.43.0+200",    { system = false })
-add_requires("openal-soft-allinone 1.23.1",    { alias = "openal", system = false, configs = { shared = true } })
+add_requires("openal-soft-alsa 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
 add_requires("libsdl 2.28.5",         { system = false, configs = { shared = false, sdlmain = false } })
 
-add_requireconfs("openal-soft-allinone.**", { system = false, configs = { shared = false } })
-add_requireconfs("libvorbis.**",            { system = false, configs = { shared = false } })
-add_requireconfs("libpng.**",               { system = false, configs = { shared = false } })
+add_requireconfs("openal-soft-alsa.**", { system = false, configs = { shared = false } })
+add_requireconfs("libvorbis.**",        { system = false, configs = { shared = false } })
+add_requireconfs("libpng.**",           { system = false, configs = { shared = false } })
 
 -- ===================================================================
 -- OS-specific dependencies

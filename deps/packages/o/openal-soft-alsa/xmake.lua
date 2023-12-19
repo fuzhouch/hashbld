@@ -1,4 +1,15 @@
-package("openal-soft-allinone")
+-- This is a customized openal-soft package with the following build
+-- options under Linux:
+--
+-- 1. Support only ASLA backend (no Sndio, PulseAudio, Pipewire, OSS, etc.)
+-- 2. Statically link with -static-libgcc and -static-libstdc++.
+-- 3. (comparing with official xrepo::openal-soft) Remove libsndio dependency.
+-- 4. (comparing with official xrepo::openal-soft) Remove add_extsources().
+-- 
+-- When building under Windows or macOS, the behaviors are the same with
+-- official xrepo::openal-soft.
+--
+package("openal-soft-alsa")
     set_homepage("https://openal-soft.org")
     set_description("OpenAL Soft is a software implementation of the OpenAL 3D audio API.")
     set_license("LGPL-2.0")
@@ -12,14 +23,6 @@ package("openal-soft-allinone")
     add_versions("1.22.2", "3e58f3d4458f5ee850039b1a6b4dac2343b3a5985a6a2e7ae2d143369c5b8135")
     add_versions("1.22.0", "814831a8013d7365dfd1917b27f1fb6e723f3be3fe1c6a7ff4516425d8392f68")
     add_versions("1.21.1", "8ac17e4e3b32c1af3d5508acfffb838640669b4274606b7892aa796ca9d7467f")
-
-    if is_plat("mingw") and is_subhost("msys") then
-        add_extsources("pacman::openal")
-    elseif is_plat("linux") then
-        add_extsources("pacman::openal", "apt::libopenal-dev")
-    elseif is_plat("macosx") then
-        add_extsources("brew::openal-soft")
-    end
 
     add_deps("cmake")
 
