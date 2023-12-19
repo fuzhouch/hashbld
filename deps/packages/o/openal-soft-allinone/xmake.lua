@@ -54,21 +54,17 @@ package("openal-soft-allinone")
                 table.insert(configs, "-DALSOFT_BACKEND_SNDIO=OFF")
                 table.insert(configs, "-DALSOFT_BACKEND_JACK=OFF")
                 table.insert(configs, "-DALSOFT_BACKEND_PORTAUDIO=OFF")
-                table.insert(configs, "-DALSOFT_BACKEND_WAVEFILE=OFF")
 
-                table.insert(configs, "-DALSOFT_BACKEND_NULL=ON")
-                table.insert(configs, "-DALSOFT_BACKEND_ALSA=ON")
-                table.insert(configs, "-DALSOFT_REQUIRE_ALSA=ON")
+                -- Enable only NULL, Wavefile and ALSA
 
                 table.insert(configs, "-DALSOFT_STATIC_LIBGCC=ON")
                 table.insert(configs, "-DALSOFT_STATIC_STDCXX=ON")
-                table.insert(configs, "-DLINKER_FLAGS=-static-libstdc++")
+                io.replace("CMakeLists.txt", "set(LINKDER_FLAGS )", "set(LINKDER_FLAGS \"-static-libstdc++\")", {plain = true})
             end
             table.insert(configs, "-DLIBTYPE=SHARED")
         else
             table.insert(configs, "-DBUILD_SHARED_LIBS=OFF")
             table.insert(configs, "-DLIBTYPE=STATIC")
-            io.replace("CMakeLists.txt", "set(LINKDER_FLAGS )", "set(LINKDER_FLAGS \"-static-libstdc++\")", {plain = true})
         end
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
         import("package.tools.cmake").install(package, configs)
