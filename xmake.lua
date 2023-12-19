@@ -24,9 +24,11 @@ end
 -- issues as below:
 --
 -- 1. libsndio: Official build has only static library. We provide our
---    own xmake package to make it work.
+--    own xmake package.
 -- 2. openal-soft: Hashlink has a trick https://github.com/HaxeFoundation/hashlink/issues/636
 --    that requires shared link. I have applied a private fix.
+--    EDITED 2023-12-19: By defining our own openal-soft-allinone
+--    package, the dependency to libsndio is removed.
 -- 3. OpenGL - We depend on libglvnd to dispatch real calls to system.
 --    The graphics system can't be included.
 --
@@ -47,12 +49,12 @@ add_requires("libjpeg-turbo 2.1.4",   { system = false })
 add_requires("libuv v1.46.0",         { system = false })
 add_requires("mbedtls 2.28.3",        { system = false })
 add_requires("sqlite3 3.43.0+200",    { system = false })
-add_requires("openal-soft 1.23.1",    { alias = "openal", system = false, configs = { shared = false } })
-add_requires("libsdl 2.28.5",   { system = false, configs = { shared = false, sdlmain = false } })
+add_requires("openal-soft-alsa 1.23.1", { alias = "openal", system = false, configs = { shared = true } })
+add_requires("libsdl 2.28.5",         { system = false, configs = { shared = false, sdlmain = false } })
 
-add_requireconfs("openal-soft.**",    { system = false, configs = { shared = false } })
-add_requireconfs("libvorbis.**",      { system = false, configs = { shared = false } })
-add_requireconfs("libpng.**",      { system = false, configs = { shared = false } })
+add_requireconfs("openal-soft-alsa.**", { system = false, configs = { shared = false } })
+add_requireconfs("libvorbis.**",        { system = false, configs = { shared = false } })
+add_requireconfs("libpng.**",           { system = false, configs = { shared = false } })
 
 -- ===================================================================
 -- OS-specific dependencies
