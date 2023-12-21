@@ -51,15 +51,26 @@ package("openal-soft-alsa")
         if package:config("shared") then
             table.insert(configs, "-DBUILD_SHARED_LIBS=ON")
             if is_plat("linux") then
-                table.insert(configs, "-DALSOFT_BACKEND_PIPEWIRE=OFF")
-                table.insert(configs, "-DALSOFT_BACKEND_PULSEAUDIO=OFF")
+                -- For Linux, let's enable ALSA, Pipewire and PulseAudio
+                -- as available backend. They are fine to enable at the
+                -- same time, as openal-soft uses dlopen() to load them.
+                -- We should not use ALSA by default because it disables a
+                -- lot of audio mixing features.
+                --
+                -- With Pipewire, PulseAudio and ALSA enabled, we should
+                -- be able to work on most modern Linux systems.
+                --
+                -- We also explicitly disable sndio as it's not really
+                -- needed.
+                --
+                -- Player can use ALSOFT_DRIVERS environment variable
+                -- to switch different backends.
+                table.insert(configs, "-DALSOFT_BACKEND_PIPEWIRE=ON")
+                table.insert(configs, "-DALSOFT_BACKEND_PULSEAUDIO=ON")
                 table.insert(configs, "-DALSOFT_BACKEND_OSS=OFF")
                 table.insert(configs, "-DALSOFT_BACKEND_SNDIO=OFF")
                 table.insert(configs, "-DALSOFT_BACKEND_JACK=OFF")
                 table.insert(configs, "-DALSOFT_BACKEND_PORTAUDIO=OFF")
-
-                -- Enable only NULL, Wavefile and ALSA
-
                 table.insert(configs, "-DALSOFT_STATIC_LIBGCC=ON")
                 table.insert(configs, "-DALSOFT_STATIC_STDCXX=ON")
                 io.replace("CMakeLists.txt", "set(LINKER_FLAGS )", "set(LINKER_FLAGS \"-static-libstdc++\")", {plain = true})
