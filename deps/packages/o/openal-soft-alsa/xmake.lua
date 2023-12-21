@@ -63,6 +63,9 @@ package("openal-soft-alsa")
                 table.insert(configs, "-DALSOFT_STATIC_LIBGCC=ON")
                 table.insert(configs, "-DALSOFT_STATIC_STDCXX=ON")
                 io.replace("CMakeLists.txt", "set(LINKER_FLAGS )", "set(LINKER_FLAGS \"-static-libstdc++\")", {plain = true})
+                -- Avoid linking to libatomic.so.1. Appears not needed
+                -- but original CmakeLists.txt always returns true.
+                io.replace("CMakeLists.txt", "set(EXTRA_LIBS atomic ${EXTRA_LIBS})", "set(EXTRA_LIBS ${EXTRA_LIBS})", {plain = true})
             end
             table.insert(configs, "-DLIBTYPE=SHARED")
         else
