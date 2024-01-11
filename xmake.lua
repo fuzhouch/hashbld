@@ -291,9 +291,21 @@ target("libhl")
 -- Main executable
 -----------------------------------------------------------------
 function copy_to_lib(target)
+    local hl_install = path.join(target:installdir(), "include", "hl.h")
+    print("[after install] copy hashlink/src/hl.h to " .. hl_install)
+    os.cp("hashlink/src/hl.h", hl_install)
+
+    local hlc_install = path.join(target:installdir(), "include", "hlc.h")
+    print("[after install] copy hashlink/src/hlc.h to " .. hlc_install)
+    os.cp("hashlink/src/hlc.h", hlc_install)
+
+    local main_install = path.join(target:installdir(), "include", "hlc_main.c")
+    print("[after install] copy hashlink/src/hlc_main.c to " .. main_install)
+    os.cp("hashlink/src/hlc_main.c", main_install)
+
     local install_to = path.join(target:installdir(), "lib", target:filename())
     print("[after install] copy " .. target:filename() .. " to " .. install_to)
-    os.cp(target:targetfile(), install_to)
+    print(os.cp)
 end
 
 target("hl")
