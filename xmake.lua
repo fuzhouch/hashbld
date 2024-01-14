@@ -201,9 +201,9 @@ end
 
 -- It's a utility function to combine multiple actions on same xmake hook.
 function chain_actions(...)
-    local args = { ... }
+    local all_args = { ... }
     return function(target)
-        for i, fun in ipairs(args) do
+        for i, fun in ipairs(all_args) do
             fun(target)
         end
     end
@@ -290,7 +290,12 @@ target("libhl")
 -----------------------------------------------------------------
 -- Main executable
 -----------------------------------------------------------------
-function copy_to_lib(target)
+
+-- Used by hl target to copy executable and include files. Note that due
+-- to some restriction of xmake (2.8.5), we can't use chain_actions
+-- because os.cp becomes unavailable when passing from chain_actions()
+-- to next level.
+function copy_include_and_executable(target)
     local hl_install = path.join(target:installdir(), "include", "hl.h")
     print("[after install] copy hashlink/src/hl.h to " .. hl_install)
     os.cp("hashlink/src/hl.h", hl_install)
@@ -303,9 +308,10 @@ function copy_to_lib(target)
     print("[after install] copy hashlink/src/hlc_main.c to " .. main_install)
     os.cp("hashlink/src/hlc_main.c", main_install)
 
-    local install_to = path.join(target:installdir(), "lib", target:filename())
-    print("[after install] copy " .. target:filename() .. " to " .. install_to)
-    print(os.cp)
+    local bin_from = path.join(target:installdir(), "bin", target:filename())
+    local bin_install = path.join(target:installdir(), "lib", target:filename())
+    print("[after install] copy " .. target:filename() .. " to " .. bin_install)
+    os.cp(bin_from, bin_install)
 end
 
 target("hl")
@@ -322,7 +328,7 @@ target("hl")
         add_links("user32")
     end
     on_load(chain_actions(compile_flags, binary_link_flags))
-    after_install(copy_to_lib)
+    after_install(copy_include_and_executable)
 
 -----------------------------------------------------------------
 -- Below are Hashlink's built-in modules. Note that they also needs
